@@ -5,7 +5,7 @@ use crate::{GameState, Labels};
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
 use crate::loading::TextureAssets;
-use crate::order::{BurgerFinishedEvent, NewOrderEvent};
+use crate::order::{BurgerFinishedEvent, MenuOnDisplay, NewOrderEvent};
 
 pub struct CookingPlugin;
 
@@ -47,11 +47,14 @@ fn start_cooking(
 fn add_ingredient(
     mut input: EventReader<KeyboardEvent>,
     mut current_burger: ResMut<CurrentBurger>,
+    menu: Res<MenuOnDisplay>,
     textures: Res<TextureAssets>,
     mut commands: Commands,
 ) {
     for KeyboardEvent(key) in input.iter() {
         if let Some(ingredient) = Ingredient::from_key(&key) {
+            // Check that the ingredient is in the menu
+            if ingredient != Ingredient::Bread && !menu.ingredients.contains(&ingredient) { continue; }
             // Display the added ingredient
             let ingredients_nb = current_burger.ingredients.len();
             commands
