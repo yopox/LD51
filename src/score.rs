@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::GameState;
-use crate::loading::{FontAssets, TextureAssets};
+use crate::loading::FontAssets;
 
 pub struct ScorePlugin;
 
@@ -26,7 +26,7 @@ impl Default for Score {
         Self {
             score: 0,
             streak: 0,
-            lives: 3,
+            lives: 5,
         }
     }
 }
@@ -51,7 +51,16 @@ impl Score {
 #[derive(Component)]
 struct ScoreUI;
 
-fn init_score(score: Res<Score>, mut commands: Commands, fonts: Res<FontAssets>) {
+fn init_score(
+    mut score: ResMut<Score>,
+    mut commands: Commands,
+    fonts: Res<FontAssets>
+) {
+    let default_score = Score::default();
+    score.score = default_score.score;
+    score.streak = default_score.streak;
+    score.lives = default_score.lives;
+
     commands
         .spawn_bundle(Text2dBundle {
             text: Text {
