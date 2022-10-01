@@ -77,7 +77,10 @@ fn receive_burger(
             ev_new_order.send(NewOrderEvent);
         } else {
             // Do not update order
-            score.compute_on_failure()
+            score.compute_on_failure();
+            if score.lives == 0 {
+                // TODO player is dead
+            }
         }
 
         return;
