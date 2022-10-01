@@ -18,24 +18,16 @@ pub struct NewOrderEvent;
 /// Event sent when the player has finished a burger
 pub struct BurgerFinishedEvent(pub Vec<Ingredient>);
 
-pub struct NewOrderTimer {
-    timer: Timer,
-}
-
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Menu::Uno)
-            .insert_resource(NewOrderTimer {
-                timer: Timer::new(Duration::from_secs(10), true),
-            })
             .insert_resource(Order {
                 ingredients: vec![],
             })
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
             .add_system(add_order.label(Labels::Logic))
-            .add_system(receive_burger)
-            .add_system(generate_order_every_ten_seconds);
+            .add_system(receive_burger);
     }
 }
 
@@ -67,18 +59,5 @@ fn receive_burger(
         // TODO: Compare ingredients with the current order and update score
         ev_new_order.send(NewOrderEvent);
         return;
-    }
-}
-
-fn generate_order_every_ten_seconds(
-    mut ev_new_order: EventWriter<NewOrderEvent>,
-    time: Res<Time>,
-    mut new_order_timer: ResMut<NewOrderTimer>
-) {
-    // tick the timer
-    new_order_timer.timer.tick(time.delta());
-
-    if new_order_timer.timer.finished() {
-        // ev_new_order.send(NewOrderEvent)
     }
 }
