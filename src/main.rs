@@ -1,9 +1,6 @@
-// disable console on windows for release builds
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use bevy::DefaultPlugins;
 use bevy::math::Vec3;
-use bevy::prelude::{App, Camera2dBundle, ClearColor, Color, Commands, Msaa, NonSend, Transform, WindowDescriptor};
+use bevy::prelude::{App, Camera2dBundle, Commands, Msaa, NonSend, Transform, WindowDescriptor};
 use bevy::render::texture::ImageSettings;
 use bevy::winit::WinitWindows;
 
@@ -13,7 +10,6 @@ fn main() {
     App::new()
         .insert_resource(ImageSettings::default_nearest())
         .insert_resource(Msaa { samples: 1 })
-        .insert_resource(ClearColor(Color::rgb(1.0, 1.0, 1.0)))
         .insert_resource(WindowDescriptor {
             width: 1280.,
             height: 720.,
@@ -45,6 +41,7 @@ fn init(mut commands: Commands) {
     commands.spawn_bundle(Camera2dBundle {
         transform: Transform {
             scale: Vec3::new(0.25, 0.25, 1.),
+            translation: Vec3::new(160., 90., 100.),
             ..Default::default()
         },
         ..Default::default()

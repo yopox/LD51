@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 
 use crate::{GameState, Labels};
 use crate::data::Ingredient;
@@ -57,10 +58,11 @@ fn add_ingredient(
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
                         index: ingredient.atlas_key(),
+                        anchor: Anchor::BottomLeft,
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(32., -48. + 8. * current_burger.ingredients.len() as f32, 0.),
+                        translation: Vec3::new(124., 22. + 8. * current_burger.ingredients.len() as f32, 1.),
                         ..Default::default()
                     },
                     ..Default::default()

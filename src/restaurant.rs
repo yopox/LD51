@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 
 use crate::{GameState, Labels};
 use crate::cooking::CurrentBurger;
@@ -31,20 +32,54 @@ struct CurrentOrderIngredient;
 #[derive(Component)]
 struct Arrow;
 
+#[derive(Component)]
+struct RestaurantUi;
+
 fn init_restaurant(
     textures: Res<TextureAssets>,
     mut commands: Commands,
 ) {
     commands
         .spawn_bundle(SpriteBundle {
+            texture: textures.restaurant.clone(),
+            sprite: Sprite {
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(RestaurantUi);
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: textures.bubble.clone(),
+            sprite: Sprite {
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
             transform: Transform {
-                translation: Vec3::new(-16., -48., 0.),
+                translation: Vec3::new(184., 64., 1.),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(RestaurantUi);
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(242., 0., 2.),
                 ..Default::default()
             },
             texture: textures.arrow.clone(),
             ..Default::default()
         })
-        .insert(Arrow);
+        .insert(Arrow)
+        .insert(RestaurantUi);
 }
 
 fn show_order(
@@ -65,10 +100,11 @@ fn show_order(
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
                         index: order.ingredients.get(i).unwrap().atlas_key(),
+                        anchor: Anchor::BottomLeft,
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(-48., -48. + 8. * i as f32, 0.),
+                        translation: Vec3::new(192., 72. + 8. * i as f32, 2.),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -84,6 +120,6 @@ fn update_arrow(
     mut arrow: Query<(&mut Transform, &mut Visibility), With<Arrow>>,
 ) {
     let (mut transform, mut visibility) = arrow.single_mut();
-    transform.translation.y = -48. + 8. * current_burger.ingredients.len() as f32;
+    transform.translation.y = 72. + 8. * current_burger.ingredients.len() as f32;
     visibility.is_visible = current_burger.ingredients.len() < order.ingredients.len();
 }
