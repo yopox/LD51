@@ -1,10 +1,29 @@
 use bevy::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum Ingredient {
     Bread,
     Steak,
-    Salad
+    Salad,
+}
+
+impl Ingredient {
+    pub fn from_key(key: &char) -> Option<Self> {
+        match key {
+            'b' => Some(Self::Bread),
+            's' => Some(Self::Steak),
+            'd' => Some(Self::Salad),
+            _ => None,
+        }
+    }
+
+    pub fn atlas_key(&self) -> usize {
+        match self {
+            Ingredient::Bread => 0,
+            Ingredient::Steak => 1,
+            Ingredient::Salad => 3,
+        }
+    }
 }
 
 #[derive(Clone)]

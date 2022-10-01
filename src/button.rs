@@ -9,7 +9,7 @@ pub struct ButtonPlugin;
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system_set(SystemSet::on_enter(GameState::Playing)
+            .add_system_set(SystemSet::on_enter(GameState::Cooking)
                     .with_system(spawn_button)
             )
             .add_system(update_buttons);
@@ -29,45 +29,34 @@ fn spawn_button(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
             transform: Transform {
-                translation: Vec3::new(-32., 0., 0.),
+                translation: Vec3::new(-32., -64., 0.),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'l' });
+        .insert(Letter { char: 'b' });
 
     commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
             transform: Transform {
-                translation: Vec3::new(-8., 0., 0.),
+                translation: Vec3::new(0., -64., 0.),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'u' });
+        .insert(Letter { char: 's' });
 
     commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
             transform: Transform {
-                translation: Vec3::new(16., 0., 0.),
+                translation: Vec3::new(32., -64., 0.),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'f' });
-
-    commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: textures.buttons.clone(),
-            transform: Transform {
-                translation: Vec3::new(40., 0., 0.),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Letter { char: 'z' });
+        .insert(Letter { char: 'd' });
 }
 
 fn update_buttons(

@@ -1,6 +1,7 @@
-use crate::loading::FontAssets;
-use crate::GameState;
 use bevy::prelude::*;
+
+use crate::GameState;
+use crate::loading::FontAssets;
 
 pub struct MenuPlugin;
 
@@ -75,7 +76,7 @@ fn click_play_button(
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
-                state.set(GameState::Playing).unwrap();
+                state.set(GameState::Cooking).unwrap();
             }
             Interaction::Hovered => {
                 *color = button_colors.hovered;

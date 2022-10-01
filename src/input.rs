@@ -4,7 +4,7 @@ use crate::GameState;
 
 pub struct InputPlugin;
 
-struct KeyboardEvent(char);
+pub struct KeyboardEvent(pub char);
 
 // This plugin listens for keyboard input and converts the input into Actions
 // Actions can then be used as a resource in other systems to act on the player input.
@@ -12,7 +12,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<Actions>()
-            .add_system_set(SystemSet::on_update(GameState::Playing)
+            .add_system_set(SystemSet::on_update(GameState::Cooking)
                                 .with_system(process_input),
             )
             .add_event::<KeyboardEvent>();

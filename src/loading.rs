@@ -12,7 +12,7 @@ impl Plugin for LoadingPlugin {
                 .with_collection::<FontAssets>()
                 .with_collection::<AudioAssets>()
                 .with_collection::<TextureAssets>()
-                .continue_to_state(GameState::Playing),
+                .continue_to_state(GameState::Cooking),
         );
     }
 }

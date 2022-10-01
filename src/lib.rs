@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::audio::InternalAudioPlugin;
 use crate::button::ButtonPlugin;
+use crate::cooking::CookingPlugin;
 use crate::input::InputPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -13,11 +14,12 @@ mod loading;
 mod menu;
 mod button;
 mod data;
+mod cooking;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
     Loading,
-    Playing,
+    Cooking,
     Menu,
 }
 
@@ -30,6 +32,7 @@ impl Plugin for GamePlugin {
             .add_plugin(MenuPlugin)
             .add_plugin(InputPlugin)
             .add_plugin(InternalAudioPlugin)
-            .add_plugin(ButtonPlugin);
+            .add_plugin(ButtonPlugin)
+            .add_plugin(CookingPlugin);
     }
 }
