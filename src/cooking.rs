@@ -66,7 +66,7 @@ fn add_ingredient(
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(124., 22. + 8. * ingredients_nb as f32, 1.),
+                        translation: Vec3::new(116., 22. + 8. * ingredients_nb as f32, 1.),
                         ..Default::default()
                     },
                     ..Default::default()

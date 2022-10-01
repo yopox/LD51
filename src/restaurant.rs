@@ -16,34 +16,35 @@ pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(GameState::Cooking)
-                .with_system(init_restaurant)
-                .with_system(init_menu),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::Cooking)
-                .label(Labels::UI)
-                .after(Labels::Logic)
-                .with_system(update_arrow)
-                .with_system(show_order)
-                .with_system(show_menu),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::Cooking)
-                .with_system(add_ingredient_watcher)
-                .with_system(add_ingredient_to_menu),
-        )
-        .add_system_set(
-            SystemSet::on_exit(GameState::Cooking)
-                .with_system(clean_restaurant)
-        )
-        .insert_resource(AddIngredientTimer(Timer::new(
-            Duration::from_secs(10),
-            true,
-        )))
-        .add_event::<ShowOrderEvent>()
-        .add_event::<AddIngredientEvent>();
+        app
+            .add_system_set(
+                SystemSet::on_enter(GameState::Cooking)
+                    .with_system(init_restaurant)
+                    .with_system(init_menu),
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Cooking)
+                    .label(Labels::UI)
+                    .after(Labels::Logic)
+                    .with_system(update_arrow)
+                    .with_system(show_order)
+                    .with_system(show_menu),
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Cooking)
+                    .with_system(add_ingredient_watcher)
+                    .with_system(add_ingredient_to_menu),
+            )
+            .add_system_set(
+                SystemSet::on_exit(GameState::Cooking)
+                    .with_system(clean_restaurant)
+            )
+            .insert_resource(AddIngredientTimer(Timer::new(
+                Duration::from_secs(10),
+                true,
+            )))
+            .add_event::<ShowOrderEvent>()
+            .add_event::<AddIngredientEvent>();
     }
 }
 
