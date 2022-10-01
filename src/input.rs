@@ -24,20 +24,54 @@ pub struct Actions {
     pub pressed: Vec<char>,
 }
 
+fn get_char(code: &KeyCode) -> Option<char> {
+    match code {
+        KeyCode::A => Some('a'),
+        KeyCode::B => Some('b'),
+        KeyCode::C => Some('c'),
+        KeyCode::D => Some('d'),
+        KeyCode::E => Some('e'),
+        KeyCode::F => Some('f'),
+        KeyCode::G => Some('g'),
+        KeyCode::H => Some('h'),
+        KeyCode::I => Some('i'),
+        KeyCode::J => Some('j'),
+        KeyCode::K => Some('k'),
+        KeyCode::L => Some('l'),
+        KeyCode::M => Some('m'),
+        KeyCode::N => Some('n'),
+        KeyCode::O => Some('o'),
+        KeyCode::P => Some('p'),
+        KeyCode::Q => Some('q'),
+        KeyCode::R => Some('r'),
+        KeyCode::S => Some('s'),
+        KeyCode::T => Some('t'),
+        KeyCode::U => Some('u'),
+        KeyCode::V => Some('v'),
+        KeyCode::W => Some('w'),
+        KeyCode::X => Some('x'),
+        KeyCode::Y => Some('y'),
+        KeyCode::Z => Some('z'),
+        _ => None,
+    }
+}
+
 fn process_input(
     mut actions: ResMut<Actions>,
     mut events: EventWriter<KeyboardEvent>,
     keyboard_input: Res<Input<KeyCode>>
 ) {
-    if keyboard_input.just_pressed(KeyCode::A) { events.send(KeyboardEvent('a')); }
-    if keyboard_input.just_pressed(KeyCode::B) { events.send(KeyboardEvent('b')); }
-    if keyboard_input.just_pressed(KeyCode::C) { events.send(KeyboardEvent('c')); }
-    if keyboard_input.just_pressed(KeyCode::D) { events.send(KeyboardEvent('d')); }
+    for code in keyboard_input.get_just_pressed() {
+        if let Some(char) = get_char(code) {
+            events.send(KeyboardEvent(char));
+        }
+    }
 
     actions.pressed.clear();
 
-    if keyboard_input.pressed(KeyCode::A) { actions.pressed.push('a'); }
-    if keyboard_input.pressed(KeyCode::B) { actions.pressed.push('b'); }
-    if keyboard_input.pressed(KeyCode::C) { actions.pressed.push('c'); }
-    if keyboard_input.pressed(KeyCode::D) { actions.pressed.push('d'); }
+    for code in keyboard_input.get_pressed() {
+        if let Some(char) = get_char(code) {
+            actions.pressed.push(char);
+        }
+    }
 }
