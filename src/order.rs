@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{GameState, Labels};
-use crate::data::{Ingredient, Menu};
+use crate::ingredients::{Ingredient, Menu};
 use crate::restaurant::ShowOrderEvent;
 use crate::score::Score;
 

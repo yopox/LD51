@@ -19,13 +19,14 @@ impl Ingredient {
         }
     }
 
-    pub fn atlas_key(&self) -> usize {
-        match self {
-            Ingredient::Bread => 0,
-            Ingredient::Steak => 1,
-            Ingredient::Tomato => 2,
-            Ingredient::Salad => 3,
-            Ingredient::Egg => 4,
+    pub fn atlas_key(&self, first: bool) -> usize {
+        match (self, first) {
+            (Ingredient::Bread, true) => 0,
+            (Ingredient::Bread, false) => 1,
+            (Ingredient::Steak, _) => 2,
+            (Ingredient::Tomato, _) => 3,
+            (Ingredient::Salad, _) => 4,
+            (Ingredient::Egg, _) => 5,
         }
     }
 }

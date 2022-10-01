@@ -99,7 +99,7 @@ fn show_order(
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
-                        index: order.ingredients.get(i).unwrap().atlas_key(),
+                        index: order.ingredients.get(i).unwrap().atlas_key(i == 0),
                         anchor: Anchor::BottomLeft,
                         ..Default::default()
                     },

@@ -16,7 +16,7 @@ mod audio;
 mod loading;
 mod menu;
 mod button;
-mod data;
+mod ingredients;
 mod cooking;
 mod order;
 mod restaurant;

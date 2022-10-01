@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
 use crate::{GameState, Labels};
-use crate::data::Ingredient;
+use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, NewOrderEvent};
@@ -53,16 +53,17 @@ fn add_ingredient(
     for KeyboardEvent(key) in input.iter() {
         if let Some(ingredient) = Ingredient::from_key(&key) {
             // Display the added ingredient
+            let ingredients_nb = current_burger.ingredients.len();
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
-                        index: ingredient.atlas_key(),
+                        index: ingredient.atlas_key(ingredients_nb == 0),
                         anchor: Anchor::BottomLeft,
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(124., 22. + 8. * current_burger.ingredients.len() as f32, 1.),
+                        translation: Vec3::new(124., 22. + 8. * ingredients_nb as f32, 1.),
                         ..Default::default()
                     },
                     ..Default::default()
