@@ -6,7 +6,7 @@ use rand::prelude::*;
 use crate::{GameState, Labels};
 use crate::ingredients::{Ingredient, Menu};
 use crate::restaurant::ShowOrderEvent;
-use crate::score::Score;
+use crate::score::{LifeIcon, Score};
 
 #[derive(Default)]
 pub struct Order {
@@ -83,7 +83,8 @@ fn receive_burger(
     mut score: ResMut<Score>,
     mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
     mut ev_new_order: EventWriter<NewOrderEvent>,
-    mut state: ResMut<State<GameState>>
+    mut state: ResMut<State<GameState>>,
+    mut life_icons: Query<(&LifeIcon, &mut TextureAtlasSprite)>,
 ) {
     for BurgerFinishedEvent(ingredients) in ev_burger_sent.iter() {
         if *ingredients == order.ingredients {
@@ -93,6 +94,10 @@ fn receive_burger(
         } else {
             // Do not update order
             score.compute_on_failure();
+            // Update life icons
+            for (LifeIcon(i), mut sprite) in life_icons.iter_mut() {
+                sprite.index = if *i >= score.lives { 1 } else { 0 };
+            }
             if score.lives == 0 {
                 state.set(GameState::GameOver).unwrap();
             }

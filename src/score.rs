@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::GameState;
-use crate::loading::FontAssets;
+use crate::loading::{FontAssets, TextureAssets};
 
 pub struct ScorePlugin;
 
@@ -51,10 +51,14 @@ impl Score {
 #[derive(Component)]
 struct ScoreUI;
 
+#[derive(Component)]
+pub struct LifeIcon(pub i32);
+
 fn init_score(
     mut score: ResMut<Score>,
     mut commands: Commands,
-    fonts: Res<FontAssets>
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
 ) {
     let default_score = Score::default();
     score.score = default_score.score;
@@ -81,9 +85,27 @@ fn init_score(
             ..Default::default()
         })
         .insert(ScoreUI);
+
+    for i in 0..score.lives {
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                sprite: Default::default(),
+                texture_atlas: textures.life.clone(),
+                transform: Transform {
+                    translation: Vec3::new(240. + 12. * i as f32, 28., 3.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(LifeIcon(i))
+            .insert(ScoreUI);
+    }
 }
 
-fn update_score(score: Res<Score>, mut query: Query<&mut Text, With<ScoreUI>>) {
+fn update_score(
+    score: Res<Score>,
+    mut query: Query<&mut Text, With<ScoreUI>>,
+) {
     for mut text in &mut query {
         text.sections[0].value = score.to_display_text();
     }
