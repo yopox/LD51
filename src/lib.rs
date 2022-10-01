@@ -9,6 +9,7 @@ use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::order::OrderPlugin;
 use crate::restaurant::RestaurantPlugin;
+use crate::score::ScorePlugin;
 
 mod input;
 mod audio;
@@ -19,6 +20,7 @@ mod data;
 mod cooking;
 mod order;
 mod restaurant;
+mod score;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -45,6 +47,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ButtonPlugin)
             .add_plugin(OrderPlugin)
             .add_plugin(CookingPlugin)
-            .add_plugin(RestaurantPlugin);
+            .add_plugin(RestaurantPlugin)
+            .add_plugin(ScorePlugin);
     }
 }
