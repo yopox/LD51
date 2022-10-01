@@ -1,8 +1,8 @@
 [package]
-name = "bevy_game" # ToDo
+name = "miam"
 version = "0.1.0"
 publish = false
-authors = ["yopox <yopox@mailo.fr>"]
+authors = ["yopox <yopoxdev@gmail.com>", "Hadrien Renaud <hadrien.renaud.22@ucl.ac.uk>"]
 edition = "2021"
 exclude = ["dist", "build", "assets", "credits"]
 

@@ -5,7 +5,7 @@ use bevy::render::texture::ImageSettings;
 use bevy::winit::WinitWindows;
 use bevy_tweening::TweeningPlugin;
 
-use bevy_game::GamePlugin;
+use miam::GamePlugin;
 
 fn main() {
     App::new()
@@ -14,7 +14,7 @@ fn main() {
         .insert_resource(WindowDescriptor {
             width: 1280.,
             height: 720.,
-            title: "Every 10 seconds".to_string(),
+            title: "miam".to_string(),
             canvas: Some("#bevy".to_owned()),
             ..Default::default()
         })

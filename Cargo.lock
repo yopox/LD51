@@ -369,20 +369,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_game"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_asset_loader",
- "bevy_kira_audio",
- "bevy_tweening",
- "embed-resource",
- "image",
- "rand",
- "winit",
-]
-
-[[package]]
 name = "bevy_gltf"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1884,6 +1870,20 @@ dependencies = [
  "foreign-types",
  "log",
  "objc",
+]
+
+[[package]]
+name = "miam"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_asset_loader",
+ "bevy_kira_audio",
+ "bevy_tweening",
+ "embed-resource",
+ "image",
+ "rand",
+ "winit",
 ]
 
 [[package]]
