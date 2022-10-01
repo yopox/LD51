@@ -14,6 +14,18 @@ pub struct Order {
     pub creation_time: Duration,
 }
 
+pub struct MenuOnDisplay {
+    pub ingredients: Vec<Ingredient>,
+}
+
+impl From<Menu> for MenuOnDisplay {
+    fn from(m: Menu) -> Self {
+        MenuOnDisplay {
+            ingredients: m.ingredients().choose_multiple(&mut thread_rng(), 2).cloned().collect()
+        }
+    }
+}
+
 pub struct OrderPlugin;
 
 /// Event sent to request a new order
@@ -24,10 +36,13 @@ pub struct BurgerFinishedEvent(pub Vec<Ingredient>);
 
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Menu::Uno)
+        let menu_reference = Menu::Uno;
+
+        app.insert_resource(menu_reference)
             .init_resource::<Order>()
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
+            .insert_resource(MenuOnDisplay::from(menu_reference))
             .add_system_set(SystemSet::on_update(GameState::Cooking)
                 .label(Labels::Logic)
                 .with_system(add_order)
@@ -36,10 +51,9 @@ impl Plugin for OrderPlugin {
     }
 }
 
-fn generate_order(menu: Menu) -> Vec<Ingredient> {
-    let ingredients = menu.ingredients();
+fn generate_order(ingredients: &Vec<Ingredient>) -> Vec<Ingredient> {
     let mut rng = thread_rng();
-    let nb_dist = rand::distributions::Uniform::new(2, ingredients.len());
+    let nb_dist = rand::distributions::Uniform::new(1, ingredients.len());
     let nb = rng.sample(nb_dist);
     let mut recipe = vec![Ingredient::Bread];
     ingredients
@@ -50,14 +64,14 @@ fn generate_order(menu: Menu) -> Vec<Ingredient> {
 }
 
 fn add_order(
-    menu: Res<Menu>,
+    menu: Res<MenuOnDisplay>,
     time: Res<Time>,
     mut order: ResMut<Order>,
     mut new_order_reader: EventReader<NewOrderEvent>,
     mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
     for _ in new_order_reader.iter() {
-        order.ingredients = generate_order(*menu);
+        order.ingredients = generate_order(&menu.ingredients);
         order.creation_time = time.time_since_startup();
         ev_show_order.send(ShowOrderEvent);
     }

@@ -2,12 +2,14 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 
 use crate::{GameState, Labels};
 use crate::cooking::CurrentBurger;
-use crate::ingredients::Ingredient;
+use crate::ingredients::{Ingredient, Menu};
 use crate::loading::TextureAssets;
-use crate::order::Order;
+use crate::order::{MenuOnDisplay, Order};
 
 pub struct RestaurantPlugin;
 
@@ -22,7 +24,9 @@ impl Plugin for RestaurantPlugin {
                     .with_system(show_order),
             )
             .add_system_set(
-                SystemSet::on_update(GameState::Cooking).with_system(add_ingredient_watcher),
+                SystemSet::on_update(GameState::Cooking)
+                    .with_system(add_ingredient_watcher)
+                    .with_system(add_ingredient_to_menu),
             )
             .insert_resource(AddIngredientTimer(Timer::new(
                 Duration::from_secs(10),
@@ -137,13 +141,30 @@ struct AddIngredientEvent(pub Ingredient);
 
 fn add_ingredient_watcher(
     time: Res<Time>,
+    menu: Res<Menu>,
+    menu_on_display: Res<MenuOnDisplay>,
     mut timer: ResMut<AddIngredientTimer>,
     mut ev_add_ingredient: EventWriter<AddIngredientEvent>,
 ) {
     timer.0.tick(time.delta());
 
     if timer.0.finished() {
-        let ingredient = Ingredient::Steak; // TODO: choose a real ingredient
-        ev_add_ingredient.send(AddIngredientEvent(ingredient));
+        menu.ingredients().shuffle(&mut thread_rng());
+        for ingredient in menu.ingredients() {
+            if !menu_on_display.ingredients.contains(&ingredient) {
+                ev_add_ingredient.send(AddIngredientEvent(ingredient));
+                return;
+            }
+        }
+        // TODO: what if there is no more ingredients to add ??
+    }
+}
+
+fn add_ingredient_to_menu(
+    mut menu: ResMut<MenuOnDisplay>,
+    mut ev_add_ingredient: EventReader<AddIngredientEvent>,
+) {
+    for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
+        menu.ingredients.push(ingredient);
     }
 }
