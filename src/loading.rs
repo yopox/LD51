@@ -1,6 +1,7 @@
-use crate::GameState;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+
+use crate::GameState;
 
 pub struct LoadingPlugin;
 
@@ -30,7 +31,7 @@ pub struct AudioAssets {
 
 #[derive(AssetCollection)]
 pub struct TextureAssets {
-    #[asset(texture_atlas(tile_size_x = 24., tile_size_y = 16., columns = 2, rows = 4, padding_x = 0., padding_y = 0.))]
+    #[asset(texture_atlas(tile_size_x = 24., tile_size_y = 16., columns = 2, rows = 26, padding_x = 0., padding_y = 0.))]
     #[asset(path = "buttons.png")]
     pub buttons: Handle<TextureAtlas>,
     #[asset(texture_atlas(tile_size_x = 48., tile_size_y = 8., columns = 1, rows = 6, padding_x = 0., padding_y = 0.))]

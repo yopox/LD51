@@ -34,7 +34,7 @@ fn spawn_button(
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'a' });
+        .insert(Letter { char: 'l' });
 
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -45,7 +45,7 @@ fn spawn_button(
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'b' });
+        .insert(Letter { char: 'u' });
 
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -56,7 +56,7 @@ fn spawn_button(
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'c' });
+        .insert(Letter { char: 'f' });
 
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -67,16 +67,17 @@ fn spawn_button(
             },
             ..Default::default()
         })
-        .insert(Letter { char: 'd' });
+        .insert(Letter { char: 'z' });
 }
 
 fn update_buttons(
     actions: Res<Actions>,
     mut buttons: Query<(&Letter, &mut TextureAtlasSprite)>,
 ) {
+    let a_code = 'a' as usize;
     for (letter, mut sprite) in buttons.iter_mut() {
         let pushed = actions.pressed.contains(&letter.char);
-        sprite.index = (letter.char as usize - 'a' as usize) * 2;
+        sprite.index = (letter.char as usize - a_code) * 2;
         if pushed { sprite.index += 1; }
     }
 }
