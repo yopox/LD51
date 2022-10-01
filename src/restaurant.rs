@@ -5,12 +5,12 @@ use bevy::sprite::Anchor;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
+use crate::{GameState, Labels};
 use crate::button::spawn_button;
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{MenuOnDisplay, Order};
-use crate::{GameState, Labels};
 
 pub struct RestaurantPlugin;
 
@@ -101,7 +101,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
         .spawn_bundle(Text2dBundle {
             text: Text {
                 sections: vec![TextSection {
-                    value: "Today's menu:".to_string(),
+                    value: "TODAY'S MENU".to_string(),
                     style: TextStyle {
                         font: fonts.axones_gold.clone(),
                         font_size: 16.0,
@@ -111,7 +111,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(16., 171., 1.),
+                translation: Vec3::new(24., 176., 1.),
                 ..Default::default()
             },
             ..Default::default()
@@ -206,8 +206,9 @@ fn spawn_menu_item(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
 ) {
-    let position = Vec2::new(16., 145. - 16. * item_number as f32);
-    spawn_button(&mut commands, position, ingredient.key(), &textures, &fonts);
+    let button_pos = Vec2::new(24., 145. - 16. * item_number as f32);
+    spawn_button(&mut commands, button_pos, ingredient.key(), &textures, &fonts);
+
     commands
         .spawn_bundle(Text2dBundle {
             text: Text {
@@ -222,7 +223,7 @@ fn spawn_menu_item(
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(32., 158. - 16. * item_number as f32, 1.),
+                translation: Vec3::new(44., 158. - 16. * item_number as f32, 1.),
                 ..Default::default()
             },
             ..Default::default()
