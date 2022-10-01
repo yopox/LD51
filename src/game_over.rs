@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use bevy::sprite::Anchor;
 
 use crate::button::{Letter, spawn_button};
 use crate::GameState;
-use crate::input::{KeyboardEvent, process_input};
+use crate::input::{KeyboardReleaseEvent, process_input};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::score::Score;
 
@@ -71,12 +70,12 @@ fn init_game_over(
 }
 
 fn update_game_over(
-    mut ev_keyboard: EventReader<KeyboardEvent>,
+    mut events: EventReader<KeyboardReleaseEvent>,
     mut state: ResMut<State<GameState>>,
 ) {
-    for &KeyboardEvent(l) in ev_keyboard.iter() {
-        if l == 'm' {
-            state.set(GameState::Menu).unwrap_or_default();
+    for KeyboardReleaseEvent(l) in events.iter() {
+        if *l == 'm' {
+            state.set(GameState::TitleScreen).unwrap_or_default();
         }
     }
 }
