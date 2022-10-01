@@ -19,9 +19,13 @@ impl Plugin for PlayerPlugin {
 
 fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
     commands
-        .spawn_bundle(SpriteBundle {
-            texture: textures.texture_bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
+        .spawn_bundle(SpriteSheetBundle {
+            sprite: TextureAtlasSprite {
+                index: 1,
+                ..Default::default()
+            },
+            texture_atlas: textures.ingredients.clone(),
+            transform: Default::default(),
             ..Default::default()
         })
         .insert(Player);
