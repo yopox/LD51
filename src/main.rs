@@ -1,27 +1,31 @@
 // disable console on windows for release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bevy::prelude::{App, ClearColor, Color, Msaa, NonSend, WindowDescriptor};
+use bevy::prelude::{App, Camera2dBundle, ClearColor, Color, Commands, Msaa, NonSend, ResMut, SystemSet, Transform, WindowDescriptor};
 use bevy::window::WindowId;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy_game::GamePlugin;
 use std::io::Cursor;
+use bevy::math::Vec3;
+use bevy::render::texture::ImageSettings;
 use winit::window::Icon;
 
 fn main() {
     App::new()
+        .insert_resource(ImageSettings::default_nearest())
         .insert_resource(Msaa { samples: 1 })
-        .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
+        .insert_resource(ClearColor(Color::rgb(1.0, 1.0, 1.0)))
         .insert_resource(WindowDescriptor {
             width: 800.,
             height: 600.,
-            title: "Bevy game".to_string(), // ToDo
+            title: "Every 10 seconds".to_string(),
             canvas: Some("#bevy".to_owned()),
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(GamePlugin)
+        .add_startup_system(init)
         .add_startup_system(set_window_icon)
         .run();
 }
@@ -37,4 +41,14 @@ fn set_window_icon(windows: NonSend<WinitWindows>) {
         let icon = Icon::from_rgba(rgba, width, height).unwrap();
         primary.set_window_icon(Some(icon));
     };
+}
+
+fn init(mut commands: Commands) {
+    commands.spawn_bundle(Camera2dBundle {
+        transform: Transform {
+            scale: Vec3::new(0.25, 0.25, 1.),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 }
