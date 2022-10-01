@@ -19,8 +19,8 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection)]
 pub struct FontAssets {
-    #[asset(path = "fonts/Axones Gold.ttf")]
-    pub axones_gold: Handle<Font>,
+    #[asset(path = "fonts/axg.ttf")]
+    pub axg: Handle<Font>,
 }
 
 #[derive(AssetCollection)]

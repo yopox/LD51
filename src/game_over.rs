@@ -36,7 +36,7 @@ fn init_game_over(
                     TextSection {
                         value: "Game Over\n".to_string(),
                         style: TextStyle {
-                            font: fonts.axones_gold.clone(),
+                            font: fonts.axg.clone(),
                             font_size: 64.0,
                             color: Color::WHITE,
                         },
@@ -44,7 +44,7 @@ fn init_game_over(
                     TextSection {
                         value: format!("Your score: {}", score.score),
                         style: TextStyle {
-                            font: fonts.axones_gold.clone(),
+                            font: fonts.axg.clone(),
                             font_size: 16.0,
                             color: Color::WHITE,
                         },

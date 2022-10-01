@@ -84,7 +84,7 @@ fn setup_title(
                 sections: vec![TextSection {
                     value: "Press SPACE".to_string(),
                     style: TextStyle {
-                        font: fonts.axones_gold.clone(),
+                        font: fonts.axg.clone(),
                         font_size: 16.0,
                         color: Color::BLACK,
                     },
@@ -175,7 +175,7 @@ fn handle_input(
                     sections: vec![TextSection {
                         value: "classic".to_string(),
                         style: TextStyle {
-                            font: fonts.axones_gold.clone(),
+                            font: fonts.axg.clone(),
                             font_size: 16.0,
                             color: Color::rgba(0., 0., 0., 0.),
                         },

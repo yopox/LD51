@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
-use crate::GameState;
 use crate::input::Actions;
 use crate::loading::{FontAssets, TextureAssets};
 
@@ -44,7 +43,7 @@ pub fn spawn_button(
                     sections: vec![TextSection {
                         value: letter.to_uppercase().to_string(),
                         style: TextStyle {
-                            font: fonts.axones_gold.clone(),
+                            font: fonts.axg.clone(),
                             font_size: 16.0,
                             ..Default::default()
                         },

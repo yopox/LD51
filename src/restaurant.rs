@@ -5,12 +5,12 @@ use bevy::sprite::Anchor;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
-use crate::button::{spawn_button, Letter};
+use crate::{GameState, Labels};
+use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{MenuOnDisplay, Order};
-use crate::{GameState, Labels};
 
 pub struct RestaurantPlugin;
 
@@ -105,7 +105,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
                 sections: vec![TextSection {
                     value: "TODAY'S MENU".to_string(),
                     style: TextStyle {
-                        font: fonts.axones_gold.clone(),
+                        font: fonts.axg.clone(),
                         font_size: 16.0,
                         color: Color::WHITE,
                     },
@@ -224,7 +224,7 @@ fn spawn_menu_item(
                 sections: vec![TextSection {
                     value: ingredient.name(),
                     style: TextStyle {
-                        font: fonts.axones_gold.clone(),
+                        font: fonts.axg.clone(),
                         font_size: 16.0,
                         color: Color::WHITE,
                     },

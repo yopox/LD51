@@ -44,7 +44,7 @@ impl Score {
     }
 
     fn to_display_text(&self) -> String {
-        format!("Score {}", self.score)
+        format!("Score: {}", self.score)
     }
 }
 
@@ -71,15 +71,16 @@ fn init_score(
                 sections: vec![TextSection {
                     value: score.to_display_text(),
                     style: TextStyle {
-                        font: fonts.axones_gold.clone(),
+                        font: fonts.axg.clone(),
                         font_size: 16.0,
                         color: Color::WHITE,
                     },
                 }],
+                alignment: TextAlignment::BOTTOM_RIGHT,
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(256., 16., 1.),
+                translation: Vec3::new(304., 162., 1.),
                 ..Default::default()
             },
             ..Default::default()
@@ -92,7 +93,7 @@ fn init_score(
                 sprite: Default::default(),
                 texture_atlas: textures.life.clone(),
                 transform: Transform {
-                    translation: Vec3::new(240. + 12. * i as f32, 28., 3.),
+                    translation: Vec3::new(248. + 12. * i as f32, 24., 3.),
                     ..Default::default()
                 },
                 ..Default::default()

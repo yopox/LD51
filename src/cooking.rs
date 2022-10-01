@@ -1,15 +1,16 @@
-use bevy::prelude::*;
-use bevy::sprite::Anchor;
-use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
-use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
 use std::time::Duration;
 
+use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
+use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
+
+use crate::{GameState, Labels};
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, NewOrderEvent, Order};
 use crate::score::Score;
-use crate::{GameState, Labels};
 
 pub struct CookingPlugin;
 
@@ -147,12 +148,12 @@ fn display_streak_or_miss(
     for &BurgerFinishedEvent(correct, nb_ingredients) in ev_send_burger.iter() {
         let text = if correct {
             if score.streak > 1 {
-                format!("{} corrects", score.streak)
+                format!("{} CHAIN", score.streak)
             } else {
                 continue;
             }
         } else {
-            "Miss".to_string()
+            "MISS".to_string()
         };
 
         let starting_position = Vec3::new(140., 44. + 8. * nb_ingredients as f32, 1.);
@@ -163,7 +164,7 @@ fn display_streak_or_miss(
                     sections: vec![TextSection {
                         value: text,
                         style: TextStyle {
-                            font: fonts.axones_gold.clone(),
+                            font: fonts.axg.clone(),
                             font_size: 16.0,
                             color: Color::rgba(0., 0., 0., 0.),
                         },
