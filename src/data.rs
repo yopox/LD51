@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-
 #[derive(Clone, Eq, PartialEq, Copy)]
 pub enum Ingredient {
     Bread,
     Steak,
     Salad,
+    Tomato,
+    Egg,
 }
 
 impl Ingredient {
@@ -13,6 +13,8 @@ impl Ingredient {
             'b' => Some(Self::Bread),
             's' => Some(Self::Steak),
             'd' => Some(Self::Salad),
+            't' => Some(Self::Tomato),
+            'e' => Some(Self::Egg),
             _ => None,
         }
     }
@@ -21,7 +23,9 @@ impl Ingredient {
         match self {
             Ingredient::Bread => 0,
             Ingredient::Steak => 1,
+            Ingredient::Tomato => 2,
             Ingredient::Salad => 3,
+            Ingredient::Egg => 4,
         }
     }
 }
@@ -40,7 +44,7 @@ impl Menu {
 
     pub fn ingredients(&self) -> Vec<Ingredient> {
         match self {
-            Menu::Uno => vec![Ingredient::Bread, Ingredient::Steak, Ingredient::Salad]
+            Menu::Uno => vec![Ingredient::Steak, Ingredient::Salad, Ingredient::Tomato, Ingredient::Egg]
         }
     }
 }

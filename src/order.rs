@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -40,7 +38,12 @@ fn generate_order(menu: Menu) -> Order {
     let mut rng = thread_rng();
     let nb_dist = rand::distributions::Uniform::new(2, ingredients.len());
     let nb = rng.sample(nb_dist);
-    return Order { ingredients: ingredients.choose_multiple(&mut rng, nb).cloned().collect() };
+    let mut recipe = vec![Ingredient::Bread];
+    ingredients
+        .choose_multiple(&mut rng, nb).cloned().collect::<Vec<Ingredient>>().iter()
+        .for_each(|x| recipe.push(*x));
+    recipe.push(Ingredient::Bread);
+    return Order { ingredients: recipe };
 }
 
 fn add_order(
