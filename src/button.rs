@@ -9,29 +9,17 @@ pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(GameState::Cooking)
-                    .with_system(spawn_buttons)
-            )
-            .add_system(update_buttons);
+        app.add_system(update_buttons);
     }
 }
 
 #[derive(Component)]
 pub struct Letter {
-    pub char: char
+    pub char: char,
 }
 
-fn spawn_buttons(
-    mut commands: Commands,
-    textures: Res<TextureAssets>,
-    fonts: Res<FontAssets>,
-) {
-    spawn_button(&mut commands, Vec2::new(16., 145.), 'b', &textures, &fonts);
-}
-
-fn spawn_button(
-    mut commands: &mut Commands,
+pub fn spawn_button(
+    commands: &mut Commands,
     position: Vec2,
     letter: char,
     textures: &Res<TextureAssets>,
@@ -40,7 +28,7 @@ fn spawn_button(
     commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
-            sprite : TextureAtlasSprite {
+            sprite: TextureAtlasSprite {
                 anchor: Anchor::BottomLeft,
                 ..Default::default()
             },
@@ -52,12 +40,16 @@ fn spawn_button(
         })
         .with_children(|parent| {
             parent.spawn_bundle(Text2dBundle {
-                text: Text { sections: vec![
-                    TextSection { value: letter.to_uppercase().to_string(), style: TextStyle {
-                        font: fonts.axones_gold.clone(),
-                        font_size: 16.0,
-                        ..Default::default()
-                    }} ], ..Default::default()
+                text: Text {
+                    sections: vec![TextSection {
+                        value: letter.to_uppercase().to_string(),
+                        style: TextStyle {
+                            font: fonts.axones_gold.clone(),
+                            font_size: 16.0,
+                            ..Default::default()
+                        },
+                    }],
+                    ..Default::default()
                 },
                 transform: Transform {
                     translation: Vec3::new(4., 13., 1.),
@@ -79,8 +71,14 @@ fn update_buttons(
         let pushed = actions.pressed.contains(&letter.char);
         let color: Color;
         match pushed {
-            true => { sprite.index = 1; color = Color::rgb(182. / 255., 182. / 255., 182. / 255.); }
-            false => { sprite.index = 0; color = Color::rgb(58. / 255., 58. / 255., 58. / 255.); }
+            true => {
+                sprite.index = 1;
+                color = Color::rgb(182. / 255., 182. / 255., 182. / 255.);
+            }
+            false => {
+                sprite.index = 0;
+                color = Color::rgb(58. / 255., 58. / 255., 58. / 255.);
+            }
         }
         let mut child_text = text.get_mut(*children.get(0).unwrap()).unwrap();
         child_text.sections.get_mut(0).unwrap().style.color = color;

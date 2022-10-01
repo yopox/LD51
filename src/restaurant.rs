@@ -5,35 +5,41 @@ use bevy::sprite::Anchor;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
-use crate::{GameState, Labels};
+use crate::button::spawn_button;
 use crate::cooking::CurrentBurger;
-use crate::loading::{FontAssets, TextureAssets};
 use crate::ingredients::{Ingredient, Menu};
+use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{MenuOnDisplay, Order};
+use crate::{GameState, Labels};
 
 pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Cooking).with_system(init_restaurant))
-            .add_system_set(
-                SystemSet::on_update(GameState::Cooking)
-                    .label(Labels::UI)
-                    .after(Labels::Logic)
-                    .with_system(update_arrow)
-                    .with_system(show_order),
-            )
-            .add_system_set(
-                SystemSet::on_update(GameState::Cooking)
-                    .with_system(add_ingredient_watcher)
-                    .with_system(add_ingredient_to_menu),
-            )
-            .insert_resource(AddIngredientTimer(Timer::new(
-                Duration::from_secs(10),
-                true,
-            )))
-            .add_event::<ShowOrderEvent>()
-            .add_event::<AddIngredientEvent>();
+        app.add_system_set(
+            SystemSet::on_enter(GameState::Cooking)
+                .with_system(init_restaurant)
+                .with_system(init_menu),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Cooking)
+                .label(Labels::UI)
+                .after(Labels::Logic)
+                .with_system(update_arrow)
+                .with_system(show_order)
+                .with_system(show_menu),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Cooking)
+                .with_system(add_ingredient_watcher)
+                .with_system(add_ingredient_to_menu),
+        )
+        .insert_resource(AddIngredientTimer(Timer::new(
+            Duration::from_secs(10),
+            true,
+        )))
+        .add_event::<ShowOrderEvent>()
+        .add_event::<AddIngredientEvent>();
     }
 }
 
@@ -48,11 +54,7 @@ struct Arrow;
 #[derive(Component)]
 struct RestaurantUi;
 
-fn init_restaurant(
-    mut commands: Commands,
-    textures: Res<TextureAssets>,
-    fonts: Res<FontAssets>,
-) {
+fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: Res<FontAssets>) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),
@@ -97,12 +99,16 @@ fn init_restaurant(
 
     commands
         .spawn_bundle(Text2dBundle {
-            text: Text { sections: vec![
-                TextSection { value: "Today's menu:".to_string(), style: TextStyle {
-                    font: fonts.axones_gold.clone(),
-                    font_size: 16.0,
-                    color: Color::WHITE,
-                }} ], ..Default::default()
+            text: Text {
+                sections: vec![TextSection {
+                    value: "Today's menu:".to_string(),
+                    style: TextStyle {
+                        font: fonts.axones_gold.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
+                    },
+                }],
+                ..Default::default()
             },
             transform: Transform {
                 translation: Vec3::new(16., 171., 1.),
@@ -187,5 +193,55 @@ fn add_ingredient_to_menu(
 ) {
     for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
         menu.ingredients.push(ingredient);
+    }
+}
+
+#[derive(Component)]
+struct CurrentMenuIngredient(Ingredient);
+
+fn spawn_menu_item(
+    ingredient: Ingredient,
+    item_number: u8,
+    mut commands: &mut Commands,
+    textures: &Res<TextureAssets>,
+    fonts: &Res<FontAssets>,
+) {
+    println!(
+        "Displaying button {} at position {}",
+        ingredient.key(),
+        item_number
+    );
+    let position = Vec2::new(16., 145. - 16. * item_number as f32);
+    spawn_button(&mut commands, position, ingredient.key(), &textures, &fonts);
+    commands.spawn_bundle((CurrentMenuIngredient(ingredient),));
+}
+
+fn init_menu(
+    menu: Res<MenuOnDisplay>,
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
+) {
+    spawn_menu_item(Ingredient::Bread, 0, &mut commands, &textures, &fonts);
+    for (i, &ingredient) in menu.ingredients.iter().enumerate() {
+        spawn_menu_item(ingredient, 1 + i as u8, &mut commands, &textures, &fonts);
+    }
+}
+
+fn show_menu(
+    mut ev_add_ingredient: EventReader<AddIngredientEvent>,
+    mut commands: Commands,
+    current_ingredients: Query<Entity, With<CurrentMenuIngredient>>,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
+) {
+    for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
+        spawn_menu_item(
+            ingredient,
+            current_ingredients.iter().count() as u8,
+            &mut commands,
+            &textures,
+            &fonts,
+        );
     }
 }

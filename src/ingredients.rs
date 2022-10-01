@@ -12,7 +12,7 @@ impl Ingredient {
         match key {
             'b' => Some(Self::Bread),
             's' => Some(Self::Steak),
-            'd' => Some(Self::Salad),
+            'l' => Some(Self::Salad),
             't' => Some(Self::Tomato),
             'e' => Some(Self::Egg),
             _ => None,
@@ -27,6 +27,16 @@ impl Ingredient {
             (Ingredient::Tomato, _) => 3,
             (Ingredient::Salad, _) => 4,
             (Ingredient::Egg, _) => 5,
+        }
+    }
+
+    pub fn key(&self) -> char {
+        match self {
+            Ingredient::Bread => 'b',
+            Ingredient::Steak => 's',
+            Ingredient::Salad => 'l',
+            Ingredient::Tomato => 't',
+            Ingredient::Egg => 'e'
         }
     }
 }
