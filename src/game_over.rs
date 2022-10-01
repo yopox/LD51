@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use crate::button::spawn_button;
 
+use crate::button::{Letter, spawn_button};
+use crate::GameState;
+use crate::input::{KeyboardEvent, process_input};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::score::Score;
-use crate::GameState;
 
 pub struct GameOverPlugin;
 
@@ -14,6 +15,11 @@ struct GameOverUI;
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameState::GameOver).with_system(init_game_over))
+            .add_system_set(
+                SystemSet::on_update(GameState::GameOver)
+                    .with_system(update_game_over)
+                    .with_system(process_input),
+            )
             .add_system_set(SystemSet::on_exit(GameState::GameOver).with_system(clean_game_over));
     }
 }
@@ -54,10 +60,36 @@ fn init_game_over(
             ..Default::default()
         })
         .insert(GameOverUI);
+
+    spawn_button(
+        &mut commands,
+        Vec2::new(154.0, 16.0),
+        'm',
+        &textures,
+        &fonts,
+    );
 }
 
-fn clean_game_over(mut commands: Commands, spawned_ui_elements: Query<Entity, With<GameOverUI>>) {
+fn update_game_over(
+    mut ev_keyboard: EventReader<KeyboardEvent>,
+    mut state: ResMut<State<GameState>>,
+) {
+    for &KeyboardEvent(l) in ev_keyboard.iter() {
+        if l == 'm' {
+            state.set(GameState::Menu).unwrap_or_default();
+        }
+    }
+}
+
+fn clean_game_over(
+    mut commands: Commands,
+    spawned_ui_elements: Query<Entity, With<GameOverUI>>,
+    buttons: Query<Entity, With<Letter>>,
+) {
     for e in &spawned_ui_elements {
+        commands.entity(e).despawn_recursive();
+    }
+    for e in buttons.iter() {
         commands.entity(e).despawn_recursive();
     }
 }

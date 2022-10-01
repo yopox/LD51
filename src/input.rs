@@ -58,7 +58,7 @@ fn get_char(code: &KeyCode) -> Option<char> {
     }
 }
 
-fn process_input(
+pub fn process_input(
     mut actions: ResMut<Actions>,
     mut events: EventWriter<KeyboardEvent>,
     keyboard_input: Res<Input<KeyCode>>
