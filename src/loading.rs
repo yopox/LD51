@@ -19,8 +19,8 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection)]
 pub struct FontAssets {
-    #[asset(path = "fonts/FiraSans-Bold.ttf")]
-    pub fira_sans: Handle<Font>,
+    // #[asset(path = "fonts/FiraSans-Bold.ttf")]
+    // pub fira_sans: Handle<Font>,
 }
 
 #[derive(AssetCollection)]
