@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Copy)]
 pub enum Ingredient {
     Bread,
     Steak,
@@ -26,19 +26,21 @@ impl Ingredient {
     }
 }
 
-#[derive(Clone)]
-pub struct Menu {
-    pub name: &'static str,
-    pub ingredients: &'static [&'static Ingredient],
-    // background: String, // --> Paths to png
+#[derive(Clone, Copy)]
+pub enum Menu {
+    Uno
 }
 
-#[derive(Component)]
-pub struct Order {
-    pub ingredients: Vec<Ingredient>,
-}
+impl Menu {
+    pub fn name(&self) -> &'static str {
+        match self {
+            Menu::Uno => "Menu Uno"
+        }
+    }
 
-pub static MENU_UNO: Menu = Menu {
-    name: "Burger",
-    ingredients: &[&Ingredient::Bread, &Ingredient::Steak, &Ingredient::Salad],
-};
+    pub fn ingredients(&self) -> Vec<Ingredient> {
+        match self {
+            Menu::Uno => vec![Ingredient::Bread, Ingredient::Steak, Ingredient::Salad]
+        }
+    }
+}

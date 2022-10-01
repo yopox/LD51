@@ -7,6 +7,7 @@ use crate::cooking::CookingPlugin;
 use crate::input::InputPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
+use crate::order::OrderPlugin;
 
 mod input;
 mod audio;
@@ -15,6 +16,7 @@ mod menu;
 mod button;
 mod data;
 mod cooking;
+mod order;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -33,6 +35,7 @@ impl Plugin for GamePlugin {
             .add_plugin(InputPlugin)
             .add_plugin(InternalAudioPlugin)
             .add_plugin(ButtonPlugin)
+            .add_plugin(OrderPlugin)
             .add_plugin(CookingPlugin);
     }
 }
