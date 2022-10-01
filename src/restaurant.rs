@@ -5,46 +5,43 @@ use bevy::sprite::Anchor;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
-use crate::{GameState, Labels};
-use crate::button::{Letter, spawn_button};
+use crate::button::{spawn_button, Letter};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{MenuOnDisplay, Order};
+use crate::{GameState, Labels};
 
 pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(
-                SystemSet::on_enter(GameState::Cooking)
-                    .with_system(init_restaurant)
-                    .with_system(init_menu),
-            )
-            .add_system_set(
-                SystemSet::on_update(GameState::Cooking)
-                    .label(Labels::UI)
-                    .after(Labels::Logic)
-                    .with_system(update_arrow)
-                    .with_system(show_order)
-                    .with_system(show_menu),
-            )
-            .add_system_set(
-                SystemSet::on_update(GameState::Cooking)
-                    .with_system(add_ingredient_watcher)
-                    .with_system(add_ingredient_to_menu),
-            )
-            .add_system_set(
-                SystemSet::on_exit(GameState::Cooking)
-                    .with_system(clean_restaurant)
-            )
-            .insert_resource(AddIngredientTimer(Timer::new(
-                Duration::from_secs(10),
-                true,
-            )))
-            .add_event::<ShowOrderEvent>()
-            .add_event::<AddIngredientEvent>();
+        app.add_system_set(
+            SystemSet::on_enter(GameState::Cooking)
+                .with_system(init_restaurant)
+                .with_system(init_menu),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Cooking)
+                .label(Labels::UI)
+                .after(Labels::LogicSender)
+                .after(Labels::LogicReceiver)
+                .with_system(update_arrow)
+                .with_system(show_order)
+                .with_system(show_menu),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Cooking)
+                .with_system(add_ingredient_watcher)
+                .with_system(add_ingredient_to_menu),
+        )
+        .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_restaurant))
+        .insert_resource(AddIngredientTimer(Timer::new(
+            Duration::from_secs(10),
+            true,
+        )))
+        .add_event::<ShowOrderEvent>()
+        .add_event::<AddIngredientEvent>();
     }
 }
 
@@ -213,7 +210,13 @@ fn spawn_menu_item(
     fonts: &Res<FontAssets>,
 ) {
     let button_pos = Vec2::new(24., 145. - 16. * item_number as f32);
-    spawn_button(&mut commands, button_pos, ingredient.key(), &textures, &fonts);
+    spawn_button(
+        &mut commands,
+        button_pos,
+        ingredient.key(),
+        &textures,
+        &fonts,
+    );
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -233,7 +236,8 @@ fn spawn_menu_item(
                 ..Default::default()
             },
             ..Default::default()
-        }).insert(CurrentMenuIngredient(ingredient))
+        })
+        .insert(CurrentMenuIngredient(ingredient))
         .insert(RestaurantUi);
 }
 

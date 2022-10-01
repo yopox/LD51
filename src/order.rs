@@ -32,7 +32,9 @@ pub struct OrderPlugin;
 pub struct NewOrderEvent;
 
 /// Event sent when the player has finished a burger
-pub struct BurgerFinishedEvent(pub Vec<Ingredient>);
+/// the bool indicates if the burger satisfies the customer demands
+/// The int indicates how many ingredients were inside the burger
+pub struct BurgerFinishedEvent(pub bool, pub usize);
 
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
@@ -44,7 +46,9 @@ impl Plugin for OrderPlugin {
             .add_event::<BurgerFinishedEvent>()
             .insert_resource(MenuOnDisplay::from(menu_reference))
             .add_system_set(SystemSet::on_update(GameState::Cooking)
-                .label(Labels::Logic)
+                .label(Labels::LogicReceiver)
+                .before(Labels::UI)
+                .after(Labels::LogicSender)
                 .with_system(add_order)
                 .with_system(receive_burger)
             );
@@ -86,10 +90,10 @@ fn receive_burger(
     mut state: ResMut<State<GameState>>,
     mut life_icons: Query<(&LifeIcon, &mut TextureAtlasSprite)>,
 ) {
-    for BurgerFinishedEvent(ingredients) in ev_burger_sent.iter() {
-        if *ingredients == order.ingredients {
+    for &BurgerFinishedEvent(correct, difficulty) in ev_burger_sent.iter() {
+        if correct {
             let duration = time.time_since_startup() - order.creation_time;
-            score.compute_on_success(duration.as_secs_f64(), ingredients.len());
+            score.compute_on_success(duration.as_secs_f64(), difficulty);
             ev_new_order.send(NewOrderEvent);
         } else {
             // Do not update order

@@ -37,7 +37,8 @@ enum GameState {
 
 #[derive(SystemLabel)]
 pub enum Labels {
-    Logic,
+    LogicSender,
+    LogicReceiver,
     UI,
 }
 
