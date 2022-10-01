@@ -53,7 +53,7 @@ fn get_char(code: &KeyCode) -> Option<char> {
         KeyCode::Y => Some('y'),
         KeyCode::Z => Some('z'),
         KeyCode::Back => Some('<'),
-        KeyCode::Space | KeyCode::NumpadEnter => Some('>'),
+        KeyCode::Space | KeyCode::Return => Some('>'),
         _ => None,
     }
 }
