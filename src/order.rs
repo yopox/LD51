@@ -1,19 +1,22 @@
-use std::sync::Arc;
 use std::time::Duration;
 
 use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::data::{Ingredient, Menu};
+use crate::Labels;
 
-#[derive(Component)]
 pub struct Order {
     pub ingredients: Vec<Ingredient>,
 }
 
 pub struct OrderPlugin;
 
+/// Event sent to request a new order
 pub struct NewOrderEvent;
+
+/// Event sent when the player has finished a burger
+pub struct BurgerFinishedEvent(pub Vec<Ingredient>);
 
 pub struct NewOrderTimer {
     timer: Timer,
@@ -25,8 +28,13 @@ impl Plugin for OrderPlugin {
             .insert_resource(NewOrderTimer {
                 timer: Timer::new(Duration::from_secs(10), true),
             })
+            .insert_resource(Order {
+                ingredients: vec![],
+            })
             .add_event::<NewOrderEvent>()
-            .add_system(add_order)
+            .add_event::<BurgerFinishedEvent>()
+            .add_system(add_order.label(Labels::Logic))
+            .add_system(receive_burger)
             .add_system(generate_order_every_ten_seconds);
     }
 }
@@ -39,10 +47,26 @@ fn generate_order(menu: Menu) -> Order {
     return Order { ingredients: ingredients.choose_multiple(&mut rng, nb).cloned().collect() };
 }
 
-fn add_order(mut commands: Commands, menu: Res<Menu>, mut new_order_reader: EventReader<NewOrderEvent>) {
+fn add_order(
+    mut commands: Commands,
+    menu: Res<Menu>,
+    mut order: ResMut<Order>,
+    mut new_order_reader: EventReader<NewOrderEvent>
+) {
     for _ in new_order_reader.iter() {
-        commands.spawn_bundle((generate_order(*menu),));
+        order.ingredients = generate_order(*menu).ingredients;
         println!("Spawned a new order.");
+    }
+}
+
+fn receive_burger(
+    mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
+    mut ev_new_order: EventWriter<NewOrderEvent>,
+) {
+    for BurgerFinishedEvent(ingredients) in ev_burger_sent.iter() {
+        // TODO: Compare ingredients with the current order and update score
+        ev_new_order.send(NewOrderEvent);
+        return;
     }
 }
 
@@ -55,6 +79,6 @@ fn generate_order_every_ten_seconds(
     new_order_timer.timer.tick(time.delta());
 
     if new_order_timer.timer.finished() {
-        ev_new_order.send(NewOrderEvent)
+        // ev_new_order.send(NewOrderEvent)
     }
 }
