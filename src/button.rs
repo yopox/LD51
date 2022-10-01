@@ -1,8 +1,9 @@
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 
 use crate::GameState;
 use crate::input::Actions;
-use crate::loading::TextureAssets;
+use crate::loading::{FontAssets, TextureAssets};
 
 pub struct ButtonPlugin;
 
@@ -10,7 +11,7 @@ impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(SystemSet::on_enter(GameState::Cooking)
-                    .with_system(spawn_button)
+                    .with_system(spawn_buttons)
             )
             .add_system(update_buttons);
     }
@@ -21,52 +22,67 @@ pub struct Letter {
     pub char: char
 }
 
-fn spawn_button(
+fn spawn_buttons(
     mut commands: Commands,
-    textures: Res<TextureAssets>
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
 ) {
-    commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: textures.buttons.clone(),
-            transform: Transform {
-                translation: Vec3::new(-32., -64., 0.),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Letter { char: 'b' });
+    spawn_button(&mut commands, Vec2::new(16., 145.), 'b', &textures, &fonts);
+}
 
+fn spawn_button(
+    mut commands: &mut Commands,
+    position: Vec2,
+    letter: char,
+    textures: &Res<TextureAssets>,
+    fonts: &Res<FontAssets>,
+) -> Entity {
     commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
+            sprite : TextureAtlasSprite {
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
             transform: Transform {
-                translation: Vec3::new(0., -64., 0.),
+                translation: Vec3::new(position.x, position.y, 2.),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .insert(Letter { char: 's' });
-
-    commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: textures.buttons.clone(),
-            transform: Transform {
-                translation: Vec3::new(32., -64., 0.),
+        .with_children(|parent| {
+            parent.spawn_bundle(Text2dBundle {
+                text: Text { sections: vec![
+                    TextSection { value: letter.to_uppercase().to_string(), style: TextStyle {
+                        font: fonts.axones_gold.clone(),
+                        font_size: 16.0,
+                        ..Default::default()
+                    }} ], ..Default::default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(4., 13., 1.),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
+            });
         })
-        .insert(Letter { char: 'd' });
+        .insert(Letter { char: letter })
+        .id()
 }
 
 fn update_buttons(
     actions: Res<Actions>,
-    mut buttons: Query<(&Letter, &mut TextureAtlasSprite)>,
+    mut buttons: Query<(&Letter, &mut TextureAtlasSprite, &Children)>,
+    mut text: Query<&mut Text>,
 ) {
-    let a_code = 'a' as usize;
-    for (letter, mut sprite) in buttons.iter_mut() {
+    for (letter, mut sprite, children) in buttons.iter_mut() {
         let pushed = actions.pressed.contains(&letter.char);
-        sprite.index = (letter.char as usize - a_code) * 2;
-        if pushed { sprite.index += 1; }
+        let color: Color;
+        match pushed {
+            true => { sprite.index = 1; color = Color::rgb(182. / 255., 182. / 255., 182. / 255.); }
+            false => { sprite.index = 0; color = Color::rgb(58. / 255., 58. / 255., 58. / 255.); }
+        }
+        let mut child_text = text.get_mut(*children.get(0).unwrap()).unwrap();
+        child_text.sections.get_mut(0).unwrap().style.color = color;
     }
 }

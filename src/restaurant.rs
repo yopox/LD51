@@ -7,8 +7,8 @@ use rand::thread_rng;
 
 use crate::{GameState, Labels};
 use crate::cooking::CurrentBurger;
+use crate::loading::{FontAssets, TextureAssets};
 use crate::ingredients::{Ingredient, Menu};
-use crate::loading::TextureAssets;
 use crate::order::{MenuOnDisplay, Order};
 
 pub struct RestaurantPlugin;
@@ -48,7 +48,11 @@ struct Arrow;
 #[derive(Component)]
 struct RestaurantUi;
 
-fn init_restaurant(textures: Res<TextureAssets>, mut commands: Commands) {
+fn init_restaurant(
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
+) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),
@@ -89,6 +93,23 @@ fn init_restaurant(textures: Res<TextureAssets>, mut commands: Commands) {
             ..Default::default()
         })
         .insert(Arrow)
+        .insert(RestaurantUi);
+
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text { sections: vec![
+                TextSection { value: "Today's menu:".to_string(), style: TextStyle {
+                    font: fonts.axones_gold.clone(),
+                    font_size: 16.0,
+                    color: Color::WHITE,
+                }} ], ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(16., 171., 1.),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
         .insert(RestaurantUi);
 }
 

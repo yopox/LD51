@@ -19,8 +19,8 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection)]
 pub struct FontAssets {
-    // #[asset(path = "fonts/FiraSans-Bold.ttf")]
-    // pub fira_sans: Handle<Font>,
+    #[asset(path = "fonts/Axones Gold.ttf")]
+    pub axones_gold: Handle<Font>,
 }
 
 #[derive(AssetCollection)]
@@ -31,7 +31,7 @@ pub struct AudioAssets {
 
 #[derive(AssetCollection)]
 pub struct TextureAssets {
-    #[asset(texture_atlas(tile_size_x = 8., tile_size_y = 16., columns = 2, rows = 26, padding_x = 0., padding_y = 0.))]
+    #[asset(texture_atlas(tile_size_x = 12., tile_size_y = 16., columns = 2, rows = 1, padding_x = 0., padding_y = 0.))]
     #[asset(path = "buttons.png")]
     pub buttons: Handle<TextureAtlas>,
     #[asset(texture_atlas(tile_size_x = 48., tile_size_y = 8., columns = 1, rows = 6, padding_x = 0., padding_y = 0.))]
