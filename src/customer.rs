@@ -6,6 +6,9 @@ use crate::loading::TextureAssets;
 
 pub struct CustomerPlugin;
 
+#[derive(Component)]
+struct CustomerUI;
+
 impl Plugin for CustomerPlugin {
     fn build(&self, app: &mut App) {
         app
@@ -41,7 +44,7 @@ fn init_customers(
                 ..Default::default()
             },
             ..Default::default()
-        });
+        }).insert(CustomerUI);
 }
 
 fn update_customers(
@@ -51,7 +54,10 @@ fn update_customers(
 }
 
 fn clean_customers(
-
+    mut commands: Commands,
+    spawned_ui_entities: Query<Entity, With<CustomerUI>>
 ) {
-
+    for e in spawned_ui_entities.iter() {
+        commands.entity(e).despawn_recursive();
+    }
 }
