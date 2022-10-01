@@ -83,6 +83,7 @@ fn receive_burger(
     mut score: ResMut<Score>,
     mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
     mut ev_new_order: EventWriter<NewOrderEvent>,
+    mut state: ResMut<State<GameState>>
 ) {
     for BurgerFinishedEvent(ingredients) in ev_burger_sent.iter() {
         if *ingredients == order.ingredients {
@@ -93,7 +94,7 @@ fn receive_burger(
             // Do not update order
             score.compute_on_failure();
             if score.lives == 0 {
-                // TODO player is dead
+                state.set(GameState::GameOver).unwrap();
             }
         }
 

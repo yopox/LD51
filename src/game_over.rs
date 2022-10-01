@@ -1,0 +1,63 @@
+use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use crate::button::spawn_button;
+
+use crate::loading::{FontAssets, TextureAssets};
+use crate::score::Score;
+use crate::GameState;
+
+pub struct GameOverPlugin;
+
+#[derive(Component)]
+struct GameOverUI;
+
+impl Plugin for GameOverPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(SystemSet::on_enter(GameState::GameOver).with_system(init_game_over))
+            .add_system_set(SystemSet::on_exit(GameState::GameOver).with_system(clean_game_over));
+    }
+}
+
+fn init_game_over(
+    score: Res<Score>,
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
+) {
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "Game Over\n".to_string(),
+                        style: TextStyle {
+                            font: fonts.axones_gold.clone(),
+                            font_size: 64.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: format!("Your score: {}", score.score),
+                        style: TextStyle {
+                            font: fonts.axones_gold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                ],
+                alignment: TextAlignment::CENTER,
+            },
+            transform: Transform {
+                translation: Vec3::new(160.0, 132.0, 1.),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(GameOverUI);
+}
+
+fn clean_game_over(mut commands: Commands, spawned_ui_elements: Query<Entity, With<GameOverUI>>) {
+    for e in &spawned_ui_elements {
+        commands.entity(e).despawn_recursive();
+    }
+}

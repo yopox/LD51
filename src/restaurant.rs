@@ -6,7 +6,7 @@ use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
 use crate::{GameState, Labels};
-use crate::button::spawn_button;
+use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
@@ -33,6 +33,10 @@ impl Plugin for RestaurantPlugin {
             SystemSet::on_update(GameState::Cooking)
                 .with_system(add_ingredient_watcher)
                 .with_system(add_ingredient_to_menu),
+        )
+        .add_system_set(
+            SystemSet::on_exit(GameState::Cooking)
+                .with_system(clean_restaurant)
         )
         .insert_resource(AddIngredientTimer(Timer::new(
             Duration::from_secs(10),
@@ -146,7 +150,8 @@ fn show_order(
                     },
                     ..Default::default()
                 })
-                .insert(CurrentOrderIngredient);
+                .insert(CurrentOrderIngredient)
+                .insert(RestaurantUi);
         }
     }
 }
@@ -227,7 +232,8 @@ fn spawn_menu_item(
                 ..Default::default()
             },
             ..Default::default()
-        }).insert(CurrentMenuIngredient(ingredient));
+        }).insert(CurrentMenuIngredient(ingredient))
+        .insert(RestaurantUi);
 }
 
 fn init_menu(
@@ -257,5 +263,18 @@ fn show_menu(
             &textures,
             &fonts,
         );
+    }
+}
+
+fn clean_restaurant(
+    mut commands: Commands,
+    spawned_ui_components: Query<Entity, With<RestaurantUi>>,
+    buttons: Query<Entity, With<Letter>>,
+) {
+    for e in spawned_ui_components.iter() {
+        commands.entity(e).despawn_recursive();
+    }
+    for e in buttons.iter() {
+        commands.entity(e).despawn_recursive();
     }
 }

@@ -9,7 +9,8 @@ impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
             .add_system_set(SystemSet::on_enter(GameState::Cooking).with_system(init_score))
-            .add_system_set(SystemSet::on_update(GameState::Cooking).with_system(update_score));
+            .add_system_set(SystemSet::on_update(GameState::Cooking).with_system(update_score))
+            .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_score));
     }
 }
 
@@ -76,5 +77,14 @@ fn init_score(score: Res<Score>, mut commands: Commands, fonts: Res<FontAssets>)
 fn update_score(score: Res<Score>, mut query: Query<&mut Text, With<ScoreUI>>) {
     for mut text in &mut query {
         text.sections[0].value = score.to_display_text();
+    }
+}
+
+fn clean_score(
+    mut commands: Commands,
+    spawned_ui_components: Query<Entity, With<ScoreUI>>,
+) {
+    for e in spawned_ui_components.iter() {
+        commands.entity(e).despawn_recursive()
     }
 }
