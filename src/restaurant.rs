@@ -206,14 +206,27 @@ fn spawn_menu_item(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
 ) {
-    println!(
-        "Displaying button {} at position {}",
-        ingredient.key(),
-        item_number
-    );
     let position = Vec2::new(16., 145. - 16. * item_number as f32);
     spawn_button(&mut commands, position, ingredient.key(), &textures, &fonts);
-    commands.spawn_bundle((CurrentMenuIngredient(ingredient),));
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: ingredient.name(),
+                    style: TextStyle {
+                        font: fonts.axones_gold.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
+                    },
+                }],
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(32., 158. - 16. * item_number as f32, 1.),
+                ..Default::default()
+            },
+            ..Default::default()
+        }).insert(CurrentMenuIngredient(ingredient));
 }
 
 fn init_menu(

@@ -36,26 +36,42 @@ impl Ingredient {
             Ingredient::Steak => 's',
             Ingredient::Salad => 'l',
             Ingredient::Tomato => 't',
-            Ingredient::Egg => 'e'
+            Ingredient::Egg => 'e',
         }
+    }
+
+    pub fn name(&self) -> String {
+        match self {
+            Ingredient::Bread => "Bread",
+            Ingredient::Steak => "Steak",
+            Ingredient::Salad => "Lettuce",
+            Ingredient::Tomato => "Tomato",
+            Ingredient::Egg => "Egg",
+        }
+        .to_string()
     }
 }
 
 #[derive(Clone, Copy)]
 pub enum Menu {
-    Uno
+    Uno,
 }
 
 impl Menu {
     pub fn name(&self) -> &'static str {
         match self {
-            Menu::Uno => "Menu Uno"
+            Menu::Uno => "Menu Uno",
         }
     }
 
     pub fn ingredients(&self) -> Vec<Ingredient> {
         match self {
-            Menu::Uno => vec![Ingredient::Steak, Ingredient::Salad, Ingredient::Tomato, Ingredient::Egg]
+            Menu::Uno => vec![
+                Ingredient::Steak,
+                Ingredient::Salad,
+                Ingredient::Tomato,
+                Ingredient::Egg,
+            ],
         }
     }
 }
