@@ -12,6 +12,7 @@ mod audio;
 mod loading;
 mod menu;
 mod button;
+mod data;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
