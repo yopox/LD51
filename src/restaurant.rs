@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
 use crate::{GameState, Labels};
 use crate::cooking::CurrentBurger;
+use crate::ingredients::Ingredient;
 use crate::loading::TextureAssets;
 use crate::order::Order;
 
@@ -10,17 +13,23 @@ pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(GameState::Cooking)
-                .with_system(init_restaurant)
+        app.add_system_set(SystemSet::on_enter(GameState::Cooking).with_system(init_restaurant))
+            .add_system_set(
+                SystemSet::on_update(GameState::Cooking)
+                    .label(Labels::UI)
+                    .after(Labels::Logic)
+                    .with_system(update_arrow)
+                    .with_system(show_order),
             )
-            .add_system_set(SystemSet::on_update(GameState::Cooking)
-                .label(Labels::UI)
-                .after(Labels::Logic)
-                .with_system(update_arrow)
-                .with_system(show_order)
+            .add_system_set(
+                SystemSet::on_update(GameState::Cooking).with_system(add_ingredient_watcher),
             )
-            .add_event::<ShowOrderEvent>();
+            .insert_resource(AddIngredientTimer(Timer::new(
+                Duration::from_secs(10),
+                true,
+            )))
+            .add_event::<ShowOrderEvent>()
+            .add_event::<AddIngredientEvent>();
     }
 }
 
@@ -35,10 +44,7 @@ struct Arrow;
 #[derive(Component)]
 struct RestaurantUi;
 
-fn init_restaurant(
-    textures: Res<TextureAssets>,
-    mut commands: Commands,
-) {
+fn init_restaurant(textures: Res<TextureAssets>, mut commands: Commands) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),
@@ -122,4 +128,22 @@ fn update_arrow(
     let (mut transform, mut visibility) = arrow.single_mut();
     transform.translation.y = 72. + 8. * current_burger.ingredients.len() as f32;
     visibility.is_visible = current_burger.ingredients.len() < order.ingredients.len();
+}
+
+#[derive(Component)]
+struct AddIngredientTimer(pub Timer);
+
+struct AddIngredientEvent(pub Ingredient);
+
+fn add_ingredient_watcher(
+    time: Res<Time>,
+    mut timer: ResMut<AddIngredientTimer>,
+    mut ev_add_ingredient: EventWriter<AddIngredientEvent>,
+) {
+    timer.0.tick(time.delta());
+
+    if timer.0.finished() {
+        let ingredient = Ingredient::Steak; // TODO: choose a real ingredient
+        ev_add_ingredient.send(AddIngredientEvent(ingredient));
+    }
 }
