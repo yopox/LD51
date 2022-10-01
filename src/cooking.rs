@@ -100,7 +100,7 @@ fn send_order(
     mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
-        if *char == '>' {
+        if *char == ' ' {
             if current_burger.ingredients.len() > 0 {
                 for entity in ingredients.iter() {
                     commands.entity(entity).despawn();

@@ -1,21 +1,22 @@
 use bevy::app::App;
 use bevy::prelude::*;
+use bevy_tweening::Lens;
 
 use crate::audio::InternalAudioPlugin;
 use crate::button::ButtonPlugin;
 use crate::cooking::CookingPlugin;
 use crate::input::InputPlugin;
 use crate::loading::LoadingPlugin;
-use crate::menu::MenuPlugin;
 use crate::order::OrderPlugin;
 use crate::restaurant::RestaurantPlugin;
 use crate::score::ScorePlugin;
+use crate::title::TitlePlugin;
 use crate::game_over::GameOverPlugin;
 
 mod input;
 mod audio;
 mod loading;
-mod menu;
+mod title;
 mod button;
 mod ingredients;
 mod cooking;
@@ -28,7 +29,7 @@ mod game_over;
 enum GameState {
     Loading,
     Cooking,
-    Menu,
+    TitleScreen,
     GameOver,
 }
 
@@ -44,7 +45,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_state(GameState::Loading)
             .add_plugin(LoadingPlugin)
-            .add_plugin(MenuPlugin)
+            .add_plugin(TitlePlugin)
             .add_plugin(InputPlugin)
             .add_plugin(InternalAudioPlugin)
             .add_plugin(ButtonPlugin)

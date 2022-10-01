@@ -3,6 +3,7 @@ use bevy::math::Vec3;
 use bevy::prelude::{App, Camera2dBundle, Commands, Msaa, NonSend, Transform, WindowDescriptor};
 use bevy::render::texture::ImageSettings;
 use bevy::winit::WinitWindows;
+use bevy_tweening::TweeningPlugin;
 
 use bevy_game::GamePlugin;
 
@@ -18,6 +19,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(TweeningPlugin)
         .add_plugin(GamePlugin)
         .add_startup_system(init)
         .add_startup_system(set_window_icon)

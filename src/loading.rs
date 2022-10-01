@@ -12,7 +12,7 @@ impl Plugin for LoadingPlugin {
                 .with_collection::<FontAssets>()
                 .with_collection::<AudioAssets>()
                 .with_collection::<TextureAssets>()
-                .continue_to_state(GameState::Cooking),
+                .continue_to_state(GameState::TitleScreen),
         );
     }
 }
@@ -37,6 +37,12 @@ pub struct TextureAssets {
     #[asset(texture_atlas(tile_size_x = 48., tile_size_y = 8., columns = 1, rows = 6, padding_x = 0., padding_y = 0.))]
     #[asset(path = "ingredients.png")]
     pub ingredients: Handle<TextureAtlas>,
+
+    #[asset(path = "miam.png")]
+    pub miam: Handle<Image>,
+    #[asset(path = "title.png")]
+    pub title: Handle<Image>,
+
     #[asset(path = "restaurant.png")]
     pub restaurant: Handle<Image>,
     #[asset(path = "bubble.png")]
