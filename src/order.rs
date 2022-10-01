@@ -3,8 +3,9 @@ use std::time::Duration;
 use bevy::prelude::*;
 use rand::prelude::*;
 
+use crate::{GameState, Labels};
 use crate::data::{Ingredient, Menu};
-use crate::Labels;
+use crate::restaurant::ShowOrderEvent;
 
 pub struct Order {
     pub ingredients: Vec<Ingredient>,
@@ -26,8 +27,11 @@ impl Plugin for OrderPlugin {
             })
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
-            .add_system(add_order.label(Labels::Logic))
-            .add_system(receive_burger);
+            .add_system_set(SystemSet::on_update(GameState::Cooking)
+                .label(Labels::Logic)
+                .with_system(add_order)
+                .with_system(receive_burger)
+            );
     }
 }
 
@@ -40,13 +44,14 @@ fn generate_order(menu: Menu) -> Order {
 }
 
 fn add_order(
-    mut commands: Commands,
     menu: Res<Menu>,
     mut order: ResMut<Order>,
-    mut new_order_reader: EventReader<NewOrderEvent>
+    mut new_order_reader: EventReader<NewOrderEvent>,
+    mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
     for _ in new_order_reader.iter() {
         order.ingredients = generate_order(*menu).ingredients;
+        ev_show_order.send(ShowOrderEvent);
         println!("Spawned a new order.");
     }
 }

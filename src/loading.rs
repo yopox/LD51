@@ -37,4 +37,6 @@ pub struct TextureAssets {
     #[asset(texture_atlas(tile_size_x = 48., tile_size_y = 8., columns = 1, rows = 6, padding_x = 0., padding_y = 0.))]
     #[asset(path = "ingredients.png")]
     pub ingredients: Handle<TextureAtlas>,
+    #[asset(path = "arrow.png")]
+    pub arrow: Handle<Image>,
 }

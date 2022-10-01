@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
+use crate::{GameState, Labels};
 use crate::data::Ingredient;
-use crate::GameState;
 use crate::input::KeyboardEvent;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, NewOrderEvent};
@@ -13,6 +13,7 @@ impl Plugin for CookingPlugin {
         app
             .init_resource::<CurrentBurger>()
             .add_system_set(SystemSet::on_enter(GameState::Cooking)
+                .before(Labels::Logic)
                 .with_system(start_cooking)
             )
             .add_system_set(SystemSet::on_update(GameState::Cooking)
@@ -24,8 +25,8 @@ impl Plugin for CookingPlugin {
 }
 
 #[derive(Default)]
-struct CurrentBurger {
-    ingredients: Vec<Ingredient>,
+pub struct CurrentBurger {
+    pub ingredients: Vec<Ingredient>,
 }
 
 #[derive(Component)]
