@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::GameState;
 use crate::loading::{FontAssets, TextureAssets};
+use crate::GameState;
 
 pub struct ScorePlugin;
 
@@ -31,6 +31,19 @@ impl Default for Score {
     }
 }
 
+fn relu(slope_neg: f64, slope_pos: f64, x: f64) -> f64 {
+    if x < 0. {
+        slope_neg * x
+    } else {
+        slope_pos * x
+    }
+}
+
+pub const TIME_PER_INGREDIENT: f64 = 1.5;
+pub const EXTRA_TIME_PER_BURGER: f64 = 3.;
+const SCORING_SLOPE_NEG: f64 = 1.;
+const SCORING_SLOPE_POS: f64 = 1.;
+
 impl Score {
     pub fn compute_on_failure(&mut self) {
         self.streak = 0;
@@ -39,8 +52,10 @@ impl Score {
 
     pub fn compute_on_success(&mut self, time: f64, difficulty: usize) {
         self.streak += 1;
-        // TODO pb : streak should not inflate your score this time if it negative
-        self.score += self.streak * (5 * (difficulty as i64 - 1) - (time.round() as i64));
+        let time_performance =
+            EXTRA_TIME_PER_BURGER + difficulty as f64 * TIME_PER_INGREDIENT - time;
+        let score = relu(SCORING_SLOPE_NEG, SCORING_SLOPE_POS * self.streak as f64, time_performance);
+        self.score += score.round() as i64;
     }
 
     fn to_display_text(&self) -> String {
@@ -103,19 +118,13 @@ fn init_score(
     }
 }
 
-fn update_score(
-    score: Res<Score>,
-    mut query: Query<&mut Text, With<ScoreUI>>,
-) {
+fn update_score(score: Res<Score>, mut query: Query<&mut Text, With<ScoreUI>>) {
     for mut text in &mut query {
         text.sections[0].value = score.to_display_text();
     }
 }
 
-fn clean_score(
-    mut commands: Commands,
-    spawned_ui_components: Query<Entity, With<ScoreUI>>,
-) {
+fn clean_score(mut commands: Commands, spawned_ui_components: Query<Entity, With<ScoreUI>>) {
     for e in spawned_ui_components.iter() {
         commands.entity(e).despawn_recursive()
     }
