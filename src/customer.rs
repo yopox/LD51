@@ -4,14 +4,16 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweeningType};
+use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
 use crate::{DummyComponent, GameState, Labels, tween};
+use crate::cooking::CurrentBurger;
 use crate::loading::TextureAssets;
-use crate::order::Order;
+use crate::order::{BurgerFinishedEvent, Order};
 use crate::restaurant::ShowOrderEvent;
 use crate::score::{EXTRA_TIME_PER_BURGER, TIME_PER_INGREDIENT};
+use crate::tween::EV_CUSTOMER_WAITING_TIME_ELAPSED;
 
 pub struct CustomerPlugin;
 
@@ -28,15 +30,16 @@ pub struct CallNewCustomer;
 
 impl Plugin for CustomerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_update(GameState::Cooking)
+        app.add_system_set(
+            SystemSet::on_update(GameState::Cooking)
                 .label(Labels::UI)
                 .after(Labels::LogicReceiver)
                 .with_system(update_customers)
                 .with_system(next_customer)
-            )
-            .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_customers))
-            .add_event::<CallNewCustomer>();
+                .with_system(watch_customer_waiting_time),
+        )
+        .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_customers))
+        .add_event::<CallNewCustomer>();
     }
 }
 
@@ -90,7 +93,8 @@ fn update_customers(
                         start: start_position,
                         end: start_position + Vec3::new(x_size / 2., 1., 1.),
                     },
-                ),
+                )
+                .with_completed_event(EV_CUSTOMER_WAITING_TIME_ELAPSED),
             ])));
     }
 }
@@ -109,16 +113,14 @@ fn next_customer(
                 .entity(current_customer)
                 .insert(Animator::new(
                     tween::tween_opacity(tween::TWEEN_TIME, false)
-                        .with_completed_event(tween::EV_DELETE)
+                        .with_completed_event(tween::EV_DELETE),
                 ))
-                .insert(Animator::new(
-                    tween::tween_position(
-                        customer_pos.xy().clone(),
-                        customer_pos.xy().clone().add(Vec2::new(32., 0.)),
-                        customer_pos.z,
-                        tween::TWEEN_TIME
-                    )
-                ))
+                .insert(Animator::new(tween::tween_position(
+                    customer_pos.xy().clone(),
+                    customer_pos.xy().clone().add(Vec2::new(32., 0.)),
+                    customer_pos.z,
+                    tween::TWEEN_TIME,
+                )))
                 .remove::<CurrentCustomer>();
         }
 
@@ -137,20 +139,19 @@ fn next_customer(
             })
             .insert(Animator::new(
                 Delay::new(Duration::from_millis(tween::TWEEN_TIME))
-                    .then(tween::fake_tween().with_completed_event(tween::EV_CUSTOMER_ARRIVED))
+                    .then(tween::fake_tween().with_completed_event(tween::EV_CUSTOMER_ARRIVED)),
             ))
             .insert(Animator::new(
                 Delay::new(Duration::from_millis(tween::TWEEN_TIME))
-                    .then(tween::tween_opacity(tween::TWEEN_TIME, true))
+                    .then(tween::tween_opacity(tween::TWEEN_TIME, true)),
             ))
             .insert(Animator::new(
-                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
-                    .then(tween::tween_position(
-                        customer_pos.xy().clone().add(Vec2::new(32., 0.)),
-                        customer_pos.xy().clone(),
-                        customer_pos.z,
-                        tween::TWEEN_TIME
-                    ))
+                Delay::new(Duration::from_millis(tween::TWEEN_TIME)).then(tween::tween_position(
+                    customer_pos.xy().clone().add(Vec2::new(32., 0.)),
+                    customer_pos.xy().clone(),
+                    customer_pos.z,
+                    tween::TWEEN_TIME,
+                )),
             ))
             .insert(DummyComponent)
             .insert(CurrentCustomer)
@@ -158,6 +159,18 @@ fn next_customer(
         break;
     }
     ev_burger.clear();
+}
+
+fn watch_customer_waiting_time(
+    current_burger: Res<CurrentBurger>,
+    mut ev_tween_finished: EventReader<TweenCompleted>,
+    mut ev_burger_completed: EventWriter<BurgerFinishedEvent>,
+) {
+    for ev in ev_tween_finished.iter() {
+        if ev.user_data == EV_CUSTOMER_WAITING_TIME_ELAPSED {
+            ev_burger_completed.send(BurgerFinishedEvent(false, current_burger.ingredients.len()))
+        }
+    }
 }
 
 fn clean_customers(mut commands: Commands, spawned_ui_entities: Query<Entity, With<CustomerUI>>) {

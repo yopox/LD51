@@ -43,7 +43,8 @@ impl Plugin for CookingPlugin {
                     .label(Labels::UI)
                     .after(Labels::LogicReceiver)
                     .with_system(add_ingredient)
-                    .with_system(display_streak_or_miss),
+                    .with_system(display_streak_or_miss)
+                    .with_system(unspawn_ingredients_when_sending_order),
             )
             .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_cooking_ui));
     }
@@ -150,54 +151,62 @@ fn delete_current(
 fn send_order(
     order: Res<Order>,
     expecting_order: Res<ExpectingOrder>,
+    current_burger: Res<CurrentBurger>,
     mut input: EventReader<KeyboardEvent>,
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
-    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
-    mut current_burger: ResMut<CurrentBurger>,
-    mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
             if !expecting_order.0 { return; }
 
             if current_burger.ingredients.len() > 0 {
-                for (entity, transform) in ingredients.iter() {
-                    let ingredient_position = transform.translation.xy();
-                    commands
-                        .entity(entity)
-                        .insert(Animator::new(
-                            Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6))
-                                .then(tween::tween_opacity(tween::TWEEN_TIME, false)
-                                    .with_completed_event(tween::EV_DELETE))
-                        ))
-                        .insert(Animator::new(
-                            Sequence::new([
-                                tween::tween_position(
-                                    ingredient_position.clone(),
-                                    ingredient_position.clone().add(Vec2::new(0., -1.)),
-                                    transform.translation.z,
-                                    tween::TWEEN_TIME / 6,
-                                ),
-                                tween::tween_position(
-                                    ingredient_position.clone().add(Vec2::new(0., -1.)),
-                                    ingredient_position.clone().add(Vec2::new(0., 4.)),
-                                    transform.translation.z,
-                                    tween::TWEEN_TIME,
-                                ),
-                            ])
-                        ))
-                        .remove::<CurrentBurgerIngredient>();
-                }
-                commands.insert_resource(ExpectingOrder(false));
                 ev_send_burger.send(BurgerFinishedEvent(
                     current_burger.ingredients == order.ingredients,
                     current_burger.ingredients.len(),
                 ));
-                current_burger.ingredients.clear();
             } else {
                 // TODO: Visual error "can't send an empty order"
             }
         }
+    }
+}
+
+fn unspawn_ingredients_when_sending_order(
+    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
+    mut commands: Commands,
+    mut current_burger: ResMut<CurrentBurger>,
+    mut ev_send_burger: EventReader<BurgerFinishedEvent>,
+) {
+    for &BurgerFinishedEvent(_, _) in ev_send_burger.iter() {
+        for (entity, transform) in ingredients.iter() {
+            let ingredient_position = transform.translation.xy();
+            commands
+                .entity(entity)
+                .insert(Animator::new(
+                    Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6))
+                        .then(tween::tween_opacity(tween::TWEEN_TIME, false)
+                            .with_completed_event(tween::EV_DELETE))
+                ))
+                .insert(Animator::new(
+                    Sequence::new([
+                        tween::tween_position(
+                            ingredient_position.clone(),
+                            ingredient_position.clone().add(Vec2::new(0., -1.)),
+                            transform.translation.z,
+                            tween::TWEEN_TIME / 6,
+                        ),
+                        tween::tween_position(
+                            ingredient_position.clone().add(Vec2::new(0., -1.)),
+                            ingredient_position.clone().add(Vec2::new(0., 4.)),
+                            transform.translation.z,
+                            tween::TWEEN_TIME,
+                        ),
+                    ])
+                ))
+                .remove::<CurrentBurgerIngredient>();
+        }
+        commands.insert_resource(ExpectingOrder(false));
+        current_burger.ingredients.clear();
     }
 }
 

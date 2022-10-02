@@ -8,10 +8,11 @@ use bevy_tweening::lens::*;
 
 use crate::Transform;
 
-pub static TWEEN_TIME: u64 = 500;
+pub const TWEEN_TIME: u64 = 500;
 
-pub static EV_DELETE: u64 = 0;
-pub static EV_CUSTOMER_ARRIVED: u64 = 1;
+pub const EV_DELETE: u64 = 0;
+pub const EV_CUSTOMER_ARRIVED: u64 = 1;
+pub const EV_CUSTOMER_WAITING_TIME_ELAPSED: u64 = 2;
 
 pub struct TweenPlugin;
 
