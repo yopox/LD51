@@ -5,7 +5,7 @@ use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
-use crate::{GameState, Labels};
+use crate::{GameState, Labels, tween};
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
 use crate::loading::{FontAssets, TextureAssets};
@@ -74,20 +74,29 @@ fn add_ingredient(
             }
             // Display the added ingredient
             let ingredients_nb = current_burger.ingredients.len();
+            let ingredient_pos_starting = Vec2::new(
+                116. + if ingredients_nb % 2 == 0 { -4. } else { 4. },
+                14. + 8. * ingredients_nb as f32
+            );
+            let ingredient_pos = Vec2::new(116., 14. + 8. * ingredients_nb as f32);
+            let ingredient_z = 1. + ingredients_nb as f32 / 20.;
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
                         index: ingredient.atlas_key(ingredients_nb == 0),
                         anchor: Anchor::BottomLeft,
+                        color: Color::rgba(1., 1., 1., 0.),
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(116., 14. + 8. * ingredients_nb as f32, 1. + ingredients_nb as f32 / 20.),
+                        translation: ingredient_pos_starting.extend(ingredient_z),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
+                .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2)))
+                .insert(Animator::new(tween::tween_position(ingredient_pos_starting, ingredient_pos, ingredient_z)))
                 .insert(CurrentBurgerIngredient)
                 .insert(CookingUI);
 
