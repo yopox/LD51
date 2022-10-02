@@ -4,16 +4,16 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
+use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
+use crate::{DummyComponent, GameState, Labels, tween};
 use crate::cooking::CurrentBurger;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
 use crate::restaurant::ShowOrderEvent;
 use crate::score::{EXTRA_TIME_PER_BURGER, Score, TIME_PER_INGREDIENT};
 use crate::tween::{EV_CUSTOMER_EXITED, EV_CUSTOMER_WAITING_TIME_ELAPSED};
-use crate::{tween, DummyComponent, GameState, Labels};
 
 pub struct CustomerPlugin;
 
@@ -34,7 +34,7 @@ impl Plugin for CustomerPlugin {
             SystemSet::on_update(GameState::Cooking)
                 .label(Labels::UI)
                 .after(Labels::LogicReceiver)
-                .with_system(update_customers)
+                .with_system(create_customer_waiting_bars)
                 .with_system(customer_enter)
                 .with_system(customer_exit)
                 .with_system(watch_customer_exited)
@@ -45,20 +45,15 @@ impl Plugin for CustomerPlugin {
     }
 }
 
-fn update_customers(
+fn create_customer_waiting_bars(
     order: Res<Order>,
     mut commands: Commands,
     mut ev_show_order: EventReader<ShowOrderEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    query: Query<Entity, With<CustomerTimer>>,
 ) {
     // Create customer timers
     for _ in ev_show_order.iter() {
-        for e in query.iter() {
-            commands.entity(e).despawn_recursive()
-        }
-
         let duration = Duration::from_secs_f64(
             EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * TIME_PER_INGREDIENT,
         );
@@ -151,6 +146,7 @@ fn customer_exit(
     mut commands: Commands,
     mut ev_burger: EventReader<BurgerFinishedEvent>,
     customer: Query<Entity, With<CurrentCustomer>>,
+    timer_query: Query<Entity, With<CustomerTimer>>,
 ) {
     for BurgerFinishedEvent(_, _) in ev_burger.iter() {
         if let Ok(current_customer) = customer.get_single() {
@@ -169,6 +165,10 @@ fn customer_exit(
                     tween::TWEEN_TIME,
                 )))
                 .remove::<CurrentCustomer>();
+        }
+
+        for e in timer_query.iter() {
+            commands.entity(e).despawn_recursive()
         }
     }
 }
