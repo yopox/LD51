@@ -16,15 +16,16 @@ use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 
 /// Flow of the restaurant:
-/// 1. [`crate::cooking::start_cooking`] -> Sends [`CallNewCustomer`] to call the first customer
-/// 2. [`crate::customer::next_customer`] -> Sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_ARRIVED }`] when the customer appears
+/// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
+/// 2. [`crate::customer::customer_enter`] -> Sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_ARRIVED }`] when the customer appears
 /// 3. [`crate::order::add_order`] -> Generates the order of the customer and sends [`ShowOrderEvent`]
-/// 4. [`crate::restaurant::show_order`] -> Shows the order
+/// 4. [`show_order`] -> Shows the order
 /// 5. [`crate::cooking::send_order`] -> The user sends an order and the event [`BurgerFinishedEvent`] is sent
 ///     - [`crate::cooking::display_streak_or_miss`] -> Listens to [`BurgerFinishedEvent`] and displays GUI
 ///     - [`crate::cooking::animate_burger`] -> Listens to [`BurgerFinishedEvent`] and animates the burger
-///     - [`crate::restaurant::hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
-///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score and sends [`CallNewCustomer`]
+///     - [`hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
+///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score and sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_EXITED`]
+/// 6. [`crate::customer::watch_customer_exited`] -> Sends [`crate::customer::CallNewCustomer`] or sets State to [`crate::GameState::GameOver`]
 pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {

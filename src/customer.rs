@@ -4,16 +4,16 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
+use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 
-use crate::{DummyComponent, GameState, Labels, tween};
 use crate::cooking::CurrentBurger;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
 use crate::restaurant::ShowOrderEvent;
-use crate::score::{EXTRA_TIME_PER_BURGER, TIME_PER_INGREDIENT};
-use crate::tween::EV_CUSTOMER_WAITING_TIME_ELAPSED;
+use crate::score::{EXTRA_TIME_PER_BURGER, Score, TIME_PER_INGREDIENT};
+use crate::tween::{EV_CUSTOMER_EXITED, EV_CUSTOMER_WAITING_TIME_ELAPSED};
+use crate::{tween, DummyComponent, GameState, Labels};
 
 pub struct CustomerPlugin;
 
@@ -35,7 +35,9 @@ impl Plugin for CustomerPlugin {
                 .label(Labels::UI)
                 .after(Labels::LogicReceiver)
                 .with_system(update_customers)
-                .with_system(next_customer)
+                .with_system(customer_enter)
+                .with_system(customer_exit)
+                .with_system(watch_customer_exited)
                 .with_system(watch_customer_waiting_time),
         )
         .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_customers))
@@ -99,32 +101,18 @@ fn update_customers(
     }
 }
 
-fn next_customer(
+fn customer_pos() -> Vec3 {
+    Vec3::new(248., 40., 2.)
+}
+
+fn customer_enter(
     mut commands: Commands,
-    mut ev_burger: EventReader<CallNewCustomer>,
-    customer: Query<Entity, With<CurrentCustomer>>,
+    mut ev_call_new_customer: EventReader<CallNewCustomer>,
     textures: Res<TextureAssets>,
 ) {
-    let customer_pos = Vec3::new(248., 40., 2.);
-
-    for CallNewCustomer in ev_burger.iter() {
-        if let Ok(current_customer) = customer.get_single() {
-            commands
-                .entity(current_customer)
-                .insert(Animator::new(
-                    tween::tween_opacity(tween::TWEEN_TIME, false)
-                        .with_completed_event(tween::EV_DELETE),
-                ))
-                .insert(Animator::new(tween::tween_position(
-                    customer_pos.xy().clone(),
-                    customer_pos.xy().clone().add(Vec2::new(32., 0.)),
-                    customer_pos.z,
-                    tween::TWEEN_TIME,
-                )))
-                .remove::<CurrentCustomer>();
-        }
-
+    for CallNewCustomer in ev_call_new_customer.iter() {
         // Spawn a new customer
+        let customer_pos = customer_pos();
         commands
             .spawn_bundle(SpriteSheetBundle {
                 texture_atlas: textures.characters.clone(),
@@ -139,7 +127,7 @@ fn next_customer(
             })
             .insert(Animator::new(
                 tween::fake_tween(tween::TWEEN_TIME)
-                    .with_completed_event(tween::EV_CUSTOMER_ARRIVED)
+                    .with_completed_event(tween::EV_CUSTOMER_ARRIVED),
             ))
             .insert(Animator::new(
                 Delay::new(Duration::from_millis(tween::TWEEN_TIME))
@@ -156,9 +144,50 @@ fn next_customer(
             .insert(DummyComponent)
             .insert(CurrentCustomer)
             .insert(CustomerUI);
-        break;
     }
-    ev_burger.clear();
+}
+
+fn customer_exit(
+    mut commands: Commands,
+    mut ev_burger: EventReader<BurgerFinishedEvent>,
+    customer: Query<Entity, With<CurrentCustomer>>,
+) {
+    for BurgerFinishedEvent(_, _) in ev_burger.iter() {
+        if let Ok(current_customer) = customer.get_single() {
+            let customer_pos = customer_pos();
+            commands
+                .entity(current_customer)
+                .insert(Animator::new(
+                    tween::tween_opacity(tween::TWEEN_TIME, false)
+                        .with_completed_event(tween::EV_DELETE)
+                        .with_completed_event(tween::EV_CUSTOMER_EXITED),
+                ))
+                .insert(Animator::new(tween::tween_position(
+                    customer_pos.xy(),
+                    customer_pos.xy() + Vec2::new(32., 0.),
+                    customer_pos.z,
+                    tween::TWEEN_TIME,
+                )))
+                .remove::<CurrentCustomer>();
+        }
+    }
+}
+
+fn watch_customer_exited(
+    score: Res<Score>,
+    mut state: ResMut<State<GameState>>,
+    mut ev_tween_finished: EventReader<TweenCompleted>,
+    mut ev_call_new_customer: EventWriter<CallNewCustomer>,
+) {
+    for ev in ev_tween_finished.iter() {
+        if ev.user_data == EV_CUSTOMER_EXITED {
+            if score.lives > 0 {
+                ev_call_new_customer.send(CallNewCustomer);
+            } else {
+                state.set(GameState::GameOver).unwrap_or_default();
+            }
+        }
+    }
 }
 
 fn watch_customer_waiting_time(

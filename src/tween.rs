@@ -13,6 +13,7 @@ pub const TWEEN_TIME: u64 = 500;
 pub const EV_DELETE: u64 = 0;
 pub const EV_CUSTOMER_ARRIVED: u64 = 1;
 pub const EV_CUSTOMER_WAITING_TIME_ELAPSED: u64 = 2;
+pub const EV_CUSTOMER_EXITED: u64 = 3;
 
 pub struct TweenPlugin;
 

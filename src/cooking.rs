@@ -19,8 +19,7 @@ pub struct CookingPlugin;
 
 impl Plugin for CookingPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<CurrentBurger>()
+        app.init_resource::<CurrentBurger>()
             .insert_resource(ExpectingOrder(false))
             .add_system_set(
                 SystemSet::on_enter(GameState::Cooking)
@@ -30,13 +29,13 @@ impl Plugin for CookingPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Cooking)
                     .before(Labels::LogicSender)
-                    .with_system(delete_current)
+                    .with_system(delete_current),
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Cooking)
                     .label(Labels::LogicSender)
                     .before(Labels::LogicReceiver)
-                    .with_system(send_order)
+                    .with_system(send_order),
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Cooking)
@@ -63,13 +62,7 @@ struct CurrentBurgerIngredient;
 
 pub struct ExpectingOrder(pub bool);
 
-fn start_cooking(
-    mut order: ResMut<CurrentBurger>,
-    mut ev_call_customer: EventWriter<CallNewCustomer>,
-) {
-    // Reset current burger
-    order.ingredients = vec![];
-
+fn start_cooking(mut ev_call_customer: EventWriter<CallNewCustomer>) {
     // Call the first customer
     ev_call_customer.send(CallNewCustomer);
 }
@@ -91,7 +84,7 @@ fn add_ingredient(
             let ingredients_nb = current_burger.ingredients.len();
             let ingredient_pos_starting = Vec2::new(
                 116. + if ingredients_nb % 2 == 0 { -4. } else { 4. },
-                14. + 8. * ingredients_nb as f32
+                14. + 8. * ingredients_nb as f32,
             );
             let ingredient_pos = Vec2::new(116., 14. + 8. * ingredients_nb as f32);
             let ingredient_z = 1. + ingredients_nb as f32 / 20.;
@@ -104,11 +97,21 @@ fn add_ingredient(
                         color: Color::rgba(1., 1., 1., 0.),
                         ..Default::default()
                     },
-                    transform: Transform::from_translation(ingredient_pos_starting.extend(ingredient_z)),
+                    transform: Transform::from_translation(
+                        ingredient_pos_starting.extend(ingredient_z),
+                    ),
                     ..Default::default()
                 })
-                .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2, true)))
-                .insert(Animator::new(tween::tween_position(ingredient_pos_starting, ingredient_pos, ingredient_z, tween::TWEEN_TIME)))
+                .insert(Animator::new(tween::tween_opacity(
+                    tween::TWEEN_TIME / 2,
+                    true,
+                )))
+                .insert(Animator::new(tween::tween_position(
+                    ingredient_pos_starting,
+                    ingredient_pos,
+                    ingredient_z,
+                    tween::TWEEN_TIME,
+                )))
                 .insert(CurrentBurgerIngredient)
                 .insert(CookingUI);
 
@@ -131,16 +134,14 @@ fn delete_current(
                     .entity(entity)
                     .insert(Animator::new(
                         tween::tween_opacity(tween::TWEEN_TIME, false)
-                            .with_completed_event(tween::EV_DELETE)
+                            .with_completed_event(tween::EV_DELETE),
                     ))
-                    .insert(Animator::new(
-                        tween::tween_position(
-                            transform.translation.xy(),
-                            transform.translation.xy().add(Vec2::new(8., 0.)),
-                            transform.translation.z,
-                            tween::TWEEN_TIME,
-                        )
-                    ))
+                    .insert(Animator::new(tween::tween_position(
+                        transform.translation.xy(),
+                        transform.translation.xy().add(Vec2::new(8., 0.)),
+                        transform.translation.z,
+                        tween::TWEEN_TIME,
+                    )))
                     .remove::<CurrentBurgerIngredient>();
             }
             current_burger.ingredients.clear();
@@ -158,7 +159,9 @@ fn send_order(
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
-            if !expecting_order.0 { return; }
+            if !expecting_order.0 {
+                return;
+            }
 
             if current_burger.ingredients.len() > 0 {
                 commands.insert_resource(ExpectingOrder(false));
@@ -185,16 +188,15 @@ fn animate_burger(
             commands
                 .entity(entity)
                 .insert(Animator::new(
-                    Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6))
-                        .then(tween::tween_opacity(tween::TWEEN_TIME, false)
-                            .with_completed_event(tween::EV_DELETE))
+                    Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6)).then(
+                        tween::tween_opacity(tween::TWEEN_TIME, false)
+                            .with_completed_event(tween::EV_DELETE),
+                    ),
                 ))
-                .insert(Animator::new(
-                    match success {
-                        true => win_sequence(ingredient_position, transform.translation.z),
-                        false => lose_sequence(ingredient_position, transform.translation.z)
-                    }
-                ))
+                .insert(Animator::new(match success {
+                    true => win_sequence(ingredient_position, transform.translation.z),
+                    false => lose_sequence(ingredient_position, transform.translation.z),
+                }))
                 .remove::<CurrentBurgerIngredient>();
         }
         current_burger.ingredients.clear();
@@ -203,10 +205,7 @@ fn animate_burger(
     ev_burger_finished.clear();
 }
 
-fn win_sequence(
-    position: Vec2,
-    z: f32,
-) -> Sequence<Transform> {
+fn win_sequence(position: Vec2, z: f32) -> Sequence<Transform> {
     Sequence::new([
         tween::tween_position(
             position.clone(),
@@ -223,10 +222,7 @@ fn win_sequence(
     ])
 }
 
-fn lose_sequence(
-    position: Vec2,
-    z: f32,
-) -> Sequence<Transform> {
+fn lose_sequence(position: Vec2, z: f32) -> Sequence<Transform> {
     let amplitude = 3.;
     let time_factor = 6;
 
@@ -240,8 +236,12 @@ fn lose_sequence(
     for i in 0..6 {
         let modif = if i % 2 == 0 { 1. } else { -1. };
         seq.push(tween::tween_position(
-            position.clone().add(Vec2::new(-1. * amplitude * modif as f32, 0.)),
-            position.clone().add(Vec2::new(amplitude * modif as f32, 0.)),
+            position
+                .clone()
+                .add(Vec2::new(-1. * amplitude * modif as f32, 0.)),
+            position
+                .clone()
+                .add(Vec2::new(amplitude * modif as f32, 0.)),
             z,
             tween::TWEEN_TIME / time_factor,
         ))
@@ -307,8 +307,13 @@ fn display_streak_or_miss(
     }
 }
 
-fn clean_cooking_ui(mut commands: Commands, spawned_ui_components: Query<Entity, With<CookingUI>>) {
+fn clean_cooking_ui(
+    mut commands: Commands,
+    spawned_ui_components: Query<Entity, With<CookingUI>>,
+    mut order: ResMut<CurrentBurger>,
+) {
     for e in spawned_ui_components.iter() {
         commands.entity(e).despawn_recursive();
     }
+    order.ingredients = vec![];
 }

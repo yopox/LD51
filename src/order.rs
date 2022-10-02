@@ -6,7 +6,6 @@ use rand::prelude::*;
 
 use crate::{GameState, Labels, tween};
 use crate::cooking::ExpectingOrder;
-use crate::customer::CallNewCustomer;
 use crate::ingredients::{Ingredient, Menu};
 use crate::restaurant::ShowOrderEvent;
 use crate::score::{LifeIcon, Score};
@@ -90,8 +89,6 @@ fn receive_burger(
     order: Res<Order>,
     mut score: ResMut<Score>,
     mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
-    mut ev_call_customer: EventWriter<CallNewCustomer>,
-    mut state: ResMut<State<GameState>>,
     mut life_icons: Query<(&LifeIcon, &mut TextureAtlasSprite)>,
 ) {
     for &BurgerFinishedEvent(correct, difficulty) in ev_burger_sent.iter() {
@@ -104,11 +101,7 @@ fn receive_burger(
             for (LifeIcon(i), mut sprite) in life_icons.iter_mut() {
                 sprite.index = if *i >= score.lives { 1 } else { 0 };
             }
-            if score.lives == 0 {
-                state.set(GameState::GameOver).unwrap();
-            }
         }
-        if score.lives > 0 { ev_call_customer.send(CallNewCustomer); }
         break;
     }
     ev_burger_sent.clear();
