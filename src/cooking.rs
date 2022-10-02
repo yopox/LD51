@@ -149,15 +149,28 @@ fn send_order(
     order: Res<Order>,
     mut input: EventReader<KeyboardEvent>,
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
-    ingredients: Query<Entity, With<CurrentBurgerIngredient>>,
+    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
     mut current_burger: ResMut<CurrentBurger>,
     mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
             if current_burger.ingredients.len() > 0 {
-                for entity in ingredients.iter() {
-                    commands.entity(entity).despawn();
+                for (entity, transform) in ingredients.iter() {
+                    commands
+                        .entity(entity)
+                        .insert(Animator::new(
+                            tween::tween_opacity(tween::TWEEN_TIME, false)
+                                .with_completed_event(0)
+                        ))
+                        .insert(Animator::new(
+                            tween::tween_position(
+                                transform.translation.xy(),
+                                transform.translation.xy().add(Vec2::new(0., 4.)),
+                                transform.translation.z
+                            )
+                        ))
+                        .remove::<CurrentBurgerIngredient>();
                 }
                 ev_send_burger.send(BurgerFinishedEvent(
                     current_burger.ingredients == order.ingredients,
