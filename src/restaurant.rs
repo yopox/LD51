@@ -1,5 +1,7 @@
+use std::ops::Add;
 use std::time::Duration;
 
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, Delay};
@@ -11,8 +13,17 @@ use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
-use crate::order::{MenuOnDisplay, Order};
+use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 
+/// Flow of the restaurant:
+/// 1. [`crate::cooking::start_cooking`] -> Sends [`CallNewCustomer`] to call the first customer
+/// 2. [`crate::customer::next_customer`] -> Sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_ARRIVED }`] when the customer appears
+/// 3. [`crate::order::add_order`] -> Generates the order of the customer and sends [`ShowOrderEvent`]
+/// 4. [`crate::restaurant::show_order`] -> Shows the order
+/// 5. [`crate::cooking::send_order`] -> The user sends an order and the event [`BurgerFinishedEvent`] is sent
+///     - [`crate::cooking::display_streak_or_miss`] -> Listens to [`BurgerFinishedEvent`] and displays GUI
+///     - [`crate::restaurant::hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
+///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score and sends [`CallNewCustomer`]
 pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
@@ -30,6 +41,7 @@ impl Plugin for RestaurantPlugin {
                 .after(Labels::LogicReceiver)
                 .with_system(update_arrow)
                 .with_system(show_order)
+                .with_system(hide_order)
                 .with_system(show_menu),
         )
         .add_system_set(
@@ -118,18 +130,40 @@ fn init_restaurant(
         .insert(RestaurantUi);
 }
 
+fn hide_order(
+    mut commands: Commands,
+    mut ev_burger_finished: EventReader<BurgerFinishedEvent>,
+    current_ingredients: Query<(Entity, &Transform), With<CurrentOrderIngredient>>,
+) {
+    for _ in ev_burger_finished.iter() {
+        for (entity, transform) in current_ingredients.iter() {
+            let ingredient_position = transform.translation.xy();
+            commands
+                .entity(entity)
+                .insert(Animator::new(
+                    tween::tween_opacity(tween::TWEEN_TIME, false)
+                        .with_completed_event(tween::EV_DELETE))
+                )
+                .insert(Animator::new(
+                    tween::tween_position(
+                        ingredient_position.clone(),
+                        ingredient_position.clone().add(Vec2::new(4., 0.)),
+                        transform.translation.z,
+                        tween::TWEEN_TIME,
+                    ))
+                )
+                .remove::<CurrentOrderIngredient>();
+        }
+    }
+}
+
 fn show_order(
     mut ev_show_order: EventReader<ShowOrderEvent>,
     order: Res<Order>,
-    current_ingredients: Query<Entity, With<CurrentOrderIngredient>>,
     textures: Res<TextureAssets>,
     mut commands: Commands,
 ) {
     for _ in ev_show_order.iter() {
-        for entity in current_ingredients.iter() {
-            commands.entity(entity).despawn();
-        }
-
         for i in 0..order.ingredients.len() {
             let ingredient_y = 60. + 8. * i as f32;
             let ingredient_z = 2. + i as f32 / 20.;
@@ -147,11 +181,11 @@ fn show_order(
                     ..Default::default()
                 })
                 .insert(Animator::new(
-                    Delay::new(Duration::from_millis(50 * i as u64))
+                    Delay::new(Duration::from_millis(100 + 50 * i as u64))
                         .then(tween::tween_opacity(tween::TWEEN_TIME, true))
                 ))
                 .insert(Animator::new(
-                    Delay::new(Duration::from_millis(50 * i as u64))
+                    Delay::new(Duration::from_millis(100 + 50 * i as u64))
                         .then(tween::tween_position(Vec2::new(192., ingredient_y),
                                                     Vec2::new(192., ingredient_y + 4.),
                                                     ingredient_z, tween::TWEEN_TIME))

@@ -4,21 +4,24 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_tweening::{Animator, Delay, EaseFunction, Sequence, Tween, TweenCompleted, TweeningType};
+use bevy_tweening::{Animator, Delay, EaseFunction, Sequence, Tween, TweeningType};
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
 use crate::{GameState, Labels, tween};
+use crate::customer::CallNewCustomer;
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
 use crate::loading::{FontAssets, TextureAssets};
-use crate::order::{BurgerFinishedEvent, MenuOnDisplay, NewOrderEvent, Order};
+use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 use crate::score::Score;
 
 pub struct CookingPlugin;
 
 impl Plugin for CookingPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<CurrentBurger>()
+        app
+            .init_resource::<CurrentBurger>()
+            .insert_resource(ExpectingOrder(false))
             .add_system_set(
                 SystemSet::on_enter(GameState::Cooking)
                     .before(Labels::LogicSender)
@@ -57,12 +60,17 @@ pub struct CurrentBurger {
 #[derive(Component)]
 struct CurrentBurgerIngredient;
 
-fn start_cooking(mut order: ResMut<CurrentBurger>, mut new_order: EventWriter<NewOrderEvent>) {
+pub struct ExpectingOrder(pub bool);
+
+fn start_cooking(
+    mut order: ResMut<CurrentBurger>,
+    mut ev_call_customer: EventWriter<CallNewCustomer>,
+) {
     // Reset current burger
     order.ingredients = vec![];
 
-    // Request an order
-    new_order.send(NewOrderEvent);
+    // Call the first customer
+    ev_call_customer.send(CallNewCustomer);
 }
 
 fn add_ingredient(
@@ -111,7 +119,6 @@ fn add_ingredient(
 
 fn delete_current(
     mut input: EventReader<KeyboardEvent>,
-    mut tween_events: EventReader<TweenCompleted>,
     ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
     mut current_burger: ResMut<CurrentBurger>,
     mut commands: Commands,
@@ -123,7 +130,7 @@ fn delete_current(
                     .entity(entity)
                     .insert(Animator::new(
                         tween::tween_opacity(tween::TWEEN_TIME, false)
-                            .with_completed_event(0)
+                            .with_completed_event(tween::EV_DELETE)
                     ))
                     .insert(Animator::new(
                         tween::tween_position(
@@ -138,16 +145,11 @@ fn delete_current(
             current_burger.ingredients.clear();
         }
     }
-
-    for TweenCompleted { entity, user_data } in tween_events.iter() {
-        if *user_data == tween::EV_DELETE {
-            commands.entity(*entity).despawn();
-        }
-    }
 }
 
 fn send_order(
     order: Res<Order>,
+    expecting_order: Res<ExpectingOrder>,
     mut input: EventReader<KeyboardEvent>,
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
     ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
@@ -156,6 +158,9 @@ fn send_order(
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
+            if !expecting_order.0 { return; }
+            commands.insert_resource(ExpectingOrder(false));
+
             if current_burger.ingredients.len() > 0 {
                 for (entity, transform) in ingredients.iter() {
                     let ingredient_position = transform.translation.xy();
@@ -164,7 +169,7 @@ fn send_order(
                         .insert(Animator::new(
                             Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6))
                                 .then(tween::tween_opacity(tween::TWEEN_TIME, false)
-                                    .with_completed_event(0))
+                                    .with_completed_event(tween::EV_DELETE))
                         ))
                         .insert(Animator::new(
                             Sequence::new([

@@ -1,11 +1,13 @@
+use std::ops::Add;
 use std::time::Duration;
 
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweeningType};
+use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
-use crate::GameState;
+use crate::{DummyComponent, GameState, Labels, tween};
 use crate::loading::TextureAssets;
 use crate::order::Order;
 use crate::restaurant::ShowOrderEvent;
@@ -17,29 +19,25 @@ pub struct CustomerPlugin;
 struct CustomerUI;
 
 #[derive(Component)]
+struct CurrentCustomer;
+
+#[derive(Component)]
 struct CustomerTimer;
+
+pub struct CallNewCustomer;
 
 impl Plugin for CustomerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Cooking).with_system(init_customers))
-            .add_system_set(SystemSet::on_update(GameState::Cooking).with_system(update_customers))
-            .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_customers));
+        app
+            .add_system_set(SystemSet::on_update(GameState::Cooking)
+                .label(Labels::UI)
+                .after(Labels::LogicReceiver)
+                .with_system(update_customers)
+                .with_system(next_customer)
+            )
+            .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_customers))
+            .add_event::<CallNewCustomer>();
     }
-}
-
-fn init_customers(mut commands: Commands, textures: Res<TextureAssets>) {
-    commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: textures.characters.clone(),
-            sprite: TextureAtlasSprite {
-                index: 0,
-                anchor: Anchor::BottomLeft,
-                ..Default::default()
-            },
-            transform: Transform::from_translation(Vec3::new(248., 40., 2.)),
-            ..Default::default()
-        })
-        .insert(CustomerUI);
 }
 
 fn update_customers(
@@ -95,6 +93,71 @@ fn update_customers(
                 ),
             ])));
     }
+}
+
+fn next_customer(
+    mut commands: Commands,
+    mut ev_burger: EventReader<CallNewCustomer>,
+    customer: Query<Entity, With<CurrentCustomer>>,
+    textures: Res<TextureAssets>,
+) {
+    let customer_pos = Vec3::new(248., 40., 2.);
+
+    for CallNewCustomer in ev_burger.iter() {
+        if let Ok(current_customer) = customer.get_single() {
+            commands
+                .entity(current_customer)
+                .insert(Animator::new(
+                    tween::tween_opacity(tween::TWEEN_TIME, false)
+                        .with_completed_event(tween::EV_DELETE)
+                ))
+                .insert(Animator::new(
+                    tween::tween_position(
+                        customer_pos.xy().clone(),
+                        customer_pos.xy().clone().add(Vec2::new(32., 0.)),
+                        customer_pos.z,
+                        tween::TWEEN_TIME
+                    )
+                ))
+                .remove::<CurrentCustomer>();
+        }
+
+        // Spawn a new customer
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: textures.characters.clone(),
+                sprite: TextureAtlasSprite {
+                    index: 0,
+                    anchor: Anchor::BottomLeft,
+                    color: Color::rgba(1., 1., 1., 0.),
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(customer_pos),
+                ..Default::default()
+            })
+            .insert(Animator::new(
+                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
+                    .then(tween::fake_tween().with_completed_event(tween::EV_CUSTOMER_ARRIVED))
+            ))
+            .insert(Animator::new(
+                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
+                    .then(tween::tween_opacity(tween::TWEEN_TIME, true))
+            ))
+            .insert(Animator::new(
+                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
+                    .then(tween::tween_position(
+                        customer_pos.xy().clone().add(Vec2::new(32., 0.)),
+                        customer_pos.xy().clone(),
+                        customer_pos.z,
+                        tween::TWEEN_TIME
+                    ))
+            ))
+            .insert(DummyComponent)
+            .insert(CurrentCustomer)
+            .insert(CustomerUI);
+        break;
+    }
+    ev_burger.clear();
 }
 
 fn clean_customers(mut commands: Commands, spawned_ui_entities: Query<Entity, With<CustomerUI>>) {
