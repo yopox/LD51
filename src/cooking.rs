@@ -1,8 +1,10 @@
+use std::ops::Add;
 use std::time::Duration;
 
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
+use bevy_tweening::{Animator, EaseFunction, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
 use crate::{GameState, Labels, tween};
@@ -24,6 +26,11 @@ impl Plugin for CookingPlugin {
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Cooking)
+                    .before(Labels::LogicSender)
+                    .with_system(delete_current)
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Cooking)
                     .label(Labels::LogicSender)
                     .before(Labels::LogicReceiver)
                     .with_system(send_order)
@@ -33,7 +40,6 @@ impl Plugin for CookingPlugin {
                     .label(Labels::UI)
                     .after(Labels::LogicReceiver)
                     .with_system(add_ingredient)
-                    .with_system(delete_current)
                     .with_system(display_streak_or_miss),
             )
             .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_cooking_ui));
@@ -92,7 +98,7 @@ fn add_ingredient(
                     transform: Transform::from_translation(ingredient_pos_starting.extend(ingredient_z)),
                     ..Default::default()
                 })
-                .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2)))
+                .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2, true)))
                 .insert(Animator::new(tween::tween_position(ingredient_pos_starting, ingredient_pos, ingredient_z)))
                 .insert(CurrentBurgerIngredient)
                 .insert(CookingUI);
@@ -105,16 +111,36 @@ fn add_ingredient(
 
 fn delete_current(
     mut input: EventReader<KeyboardEvent>,
-    ingredients: Query<Entity, With<CurrentBurgerIngredient>>,
+    mut tween_events: EventReader<TweenCompleted>,
+    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
     mut current_burger: ResMut<CurrentBurger>,
     mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == '<' {
-            for entity in ingredients.iter() {
-                commands.entity(entity).despawn();
+            for (entity, transform) in ingredients.iter() {
+                commands
+                    .entity(entity)
+                    .insert(Animator::new(
+                        tween::tween_opacity(tween::TWEEN_TIME, false)
+                            .with_completed_event(0)
+                    ))
+                    .insert(Animator::new(
+                        tween::tween_position(
+                            transform.translation.xy(),
+                            transform.translation.xy().add(Vec2::new(8., 0.)),
+                            transform.translation.z
+                        )
+                    ))
+                    .remove::<CurrentBurgerIngredient>();
             }
             current_burger.ingredients.clear();
+        }
+    }
+
+    for TweenCompleted { entity, user_data } in tween_events.iter() {
+        if *user_data == tween::EV_DELETE {
+            commands.entity(*entity).despawn();
         }
     }
 }

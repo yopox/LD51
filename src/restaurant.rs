@@ -143,7 +143,7 @@ fn show_order(
                 })
                 .insert(Animator::new(
                     Delay::new(Duration::from_millis(50 * i as u64))
-                        .then(tween::tween_opacity(tween::TWEEN_TIME))
+                        .then(tween::tween_opacity(tween::TWEEN_TIME, true))
                 ))
                 .insert(Animator::new(
                     Delay::new(Duration::from_millis(50 * i as u64))
