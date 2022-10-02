@@ -159,7 +159,6 @@ fn send_order(
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
             if !expecting_order.0 { return; }
-            commands.insert_resource(ExpectingOrder(false));
 
             if current_burger.ingredients.len() > 0 {
                 for (entity, transform) in ingredients.iter() {
@@ -189,6 +188,7 @@ fn send_order(
                         ))
                         .remove::<CurrentBurgerIngredient>();
                 }
+                commands.insert_resource(ExpectingOrder(false));
                 ev_send_burger.send(BurgerFinishedEvent(
                     current_burger.ingredients == order.ingredients,
                     current_burger.ingredients.len(),
