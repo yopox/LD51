@@ -14,6 +14,7 @@ pub struct Order {
     pub creation_time: Duration,
 }
 
+#[derive(Default)]
 pub struct MenuOnDisplay {
     pub ingredients: Vec<Ingredient>,
 }
@@ -38,13 +39,16 @@ pub struct BurgerFinishedEvent(pub bool, pub usize);
 
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
-        let menu_reference = Menu::Uno;
-
-        app.insert_resource(menu_reference)
+        app
+            .insert_resource(Menu::Uno)
             .init_resource::<Order>()
+            .init_resource::<MenuOnDisplay>()
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
-            .insert_resource(MenuOnDisplay::from(menu_reference))
+            .add_system_set(SystemSet::on_enter(GameState::Cooking)
+                .before(Labels::UI)
+                .with_system(init_menu)
+            )
             .add_system_set(SystemSet::on_update(GameState::Cooking)
                 .label(Labels::LogicReceiver)
                 .before(Labels::UI)
@@ -53,6 +57,16 @@ impl Plugin for OrderPlugin {
                 .with_system(receive_burger)
             );
     }
+}
+
+fn init_menu(
+    menu: Res<Menu>,
+    mut menu_on_display: ResMut<MenuOnDisplay>,
+) {
+    menu_on_display.ingredients.clear();
+    MenuOnDisplay::from(*menu).ingredients.iter().for_each(
+        |i| menu_on_display.ingredients.push(*i)
+    );
 }
 
 fn generate_order(ingredients: &Vec<Ingredient>) -> Vec<Ingredient> {

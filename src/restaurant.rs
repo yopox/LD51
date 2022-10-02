@@ -19,6 +19,7 @@ impl Plugin for RestaurantPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_enter(GameState::Cooking)
+                .label(Labels::UI)
                 .with_system(init_restaurant)
                 .with_system(init_menu),
         )
@@ -57,7 +58,11 @@ struct Arrow;
 #[derive(Component)]
 struct RestaurantUi;
 
-fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: Res<FontAssets>) {
+fn init_restaurant(
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>
+) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),
@@ -243,8 +248,8 @@ fn spawn_menu_item(
 }
 
 fn init_menu(
-    menu: Res<MenuOnDisplay>,
     mut commands: Commands,
+    menu: Res<MenuOnDisplay>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
 ) {
