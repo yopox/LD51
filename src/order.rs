@@ -1,13 +1,13 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use rand::prelude::*;
+use bevy::utils::HashSet;
 
 use crate::{GameState, Labels};
 use crate::cooking::ExpectingOrder;
 use crate::customer::CallNewCustomer;
 use crate::ingredients::{Ingredient, Menu};
-use crate::restaurant::ShowOrderEvent;
+use crate::restaurant::{AddIngredientEvent, ShowOrderEvent};
 use crate::score::{LifeIcon, Score};
 
 #[derive(Default)]
@@ -19,14 +19,7 @@ pub struct Order {
 #[derive(Default)]
 pub struct MenuOnDisplay {
     pub ingredients: Vec<Ingredient>,
-}
-
-impl From<Menu> for MenuOnDisplay {
-    fn from(m: Menu) -> Self {
-        MenuOnDisplay {
-            ingredients: m.ingredients().choose_multiple(&mut thread_rng(), 2).cloned().collect()
-        }
-    }
+    pub ingredients_seen: HashSet<Ingredient>,
 }
 
 pub struct OrderPlugin;
@@ -57,11 +50,17 @@ impl Plugin for OrderPlugin {
             );
     }
 }
+
 fn init_menu(
     menu: Res<Menu>,
     mut menu_on_display: ResMut<MenuOnDisplay>,
+    mut ev_add_ingredient: EventWriter<AddIngredientEvent>,
 ) {
-    menu_on_display.ingredients = menu.basic_ingredients();
+    menu_on_display.ingredients.clear();
+    menu_on_display.ingredients_seen.clear();
+    for i in menu.basic_ingredients() {
+        ev_add_ingredient.send(AddIngredientEvent(i));
+    }
 }
 
 fn add_order(
