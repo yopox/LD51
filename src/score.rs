@@ -31,17 +31,8 @@ impl Default for Score {
     }
 }
 
-fn relu(slope_neg: f64, slope_pos: f64, x: f64) -> f64 {
-    if x < 0. {
-        slope_neg * x
-    } else {
-        slope_pos * x
-    }
-}
-
 pub const TIME_PER_INGREDIENT: f64 = 1.5;
 pub const EXTRA_TIME_PER_BURGER: f64 = 3.;
-const SCORING_SLOPE_NEG: f64 = 1.;
 const SCORING_SLOPE_POS: f64 = 1.;
 
 impl Score {
@@ -54,7 +45,7 @@ impl Score {
         self.streak += 1;
         let time_performance =
             EXTRA_TIME_PER_BURGER + difficulty as f64 * TIME_PER_INGREDIENT - time;
-        let score = relu(SCORING_SLOPE_NEG, SCORING_SLOPE_POS * self.streak as f64, time_performance);
+        let score = SCORING_SLOPE_POS * self.streak as f64 * time_performance;
         self.score += score.round() as i64;
     }
 
