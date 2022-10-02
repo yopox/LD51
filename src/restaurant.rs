@@ -169,6 +169,8 @@ struct AddIngredientTimer(pub Timer);
 
 struct AddIngredientEvent(pub Ingredient);
 
+static MENU_SIZE: usize = 8;
+
 fn add_ingredient_watcher(
     time: Res<Time>,
     menu: Res<Menu>,
@@ -181,12 +183,11 @@ fn add_ingredient_watcher(
     if timer.0.finished() {
         menu.ingredients().shuffle(&mut thread_rng());
         for ingredient in menu.ingredients() {
-            if !menu_on_display.ingredients.contains(&ingredient) {
+            if menu_on_display.ingredients.len() < MENU_SIZE && !menu_on_display.ingredients.contains(&ingredient) {
                 ev_add_ingredient.send(AddIngredientEvent(ingredient));
                 return;
             }
         }
-        // TODO: what if there is no more ingredients to add ??
     }
 }
 
