@@ -31,10 +31,7 @@ pub fn spawn_button(
                 anchor: Anchor::BottomLeft,
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(position.x, position.y, 2.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(position.x, position.y, 2.),
             ..Default::default()
         })
         .with_children(|parent| {
@@ -50,10 +47,7 @@ pub fn spawn_button(
                     }],
                     ..Default::default()
                 },
-                transform: Transform {
-                    translation: Vec3::new(4., 13., 1.),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(4., 13., 1.),
                 ..Default::default()
             });
         })

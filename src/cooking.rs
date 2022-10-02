@@ -89,10 +89,7 @@ fn add_ingredient(
                         color: Color::rgba(1., 1., 1., 0.),
                         ..Default::default()
                     },
-                    transform: Transform {
-                        translation: ingredient_pos_starting.extend(ingredient_z),
-                        ..Default::default()
-                    },
+                    transform: Transform::from_translation(ingredient_pos_starting.extend(ingredient_z)),
                     ..Default::default()
                 })
                 .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2)))
@@ -180,10 +177,7 @@ fn display_streak_or_miss(
                     }],
                     alignment: TextAlignment::CENTER,
                 },
-                transform: Transform {
-                    translation: starting_position,
-                    ..Default::default()
-                },
+                transform: Transform::from_translation(starting_position),
                 ..Default::default()
             })
             .insert(CookingUI)

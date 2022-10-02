@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::loading::{FontAssets, TextureAssets};
 use crate::GameState;
+use crate::loading::{FontAssets, TextureAssets};
 
 pub struct ScorePlugin;
 
@@ -94,10 +94,7 @@ fn init_score(
                 alignment: TextAlignment::BOTTOM_RIGHT,
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(304., 162., 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(304., 162., 1.),
             ..Default::default()
         })
         .insert(ScoreUI);
@@ -107,10 +104,7 @@ fn init_score(
             .spawn_bundle(SpriteSheetBundle {
                 sprite: Default::default(),
                 texture_atlas: textures.life.clone(),
-                transform: Transform {
-                    translation: Vec3::new(248. + 12. * i as f32, 24., 3.),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(248. + 12. * i as f32, 24., 3.),
                 ..Default::default()
             })
             .insert(LifeIcon(i))

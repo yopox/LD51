@@ -62,9 +62,6 @@ fn setup_title(
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.miam.clone(),
-            transform: Transform {
-                ..Default::default()
-            },
             ..Default::default()
         })
         .insert(TitleUi)
@@ -92,10 +89,7 @@ fn setup_title(
                 alignment: TextAlignment::CENTER,
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(170., 16., 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(170., 16., 1.),
             ..Default::default()
         })
         .insert(TitleUi);
@@ -114,10 +108,7 @@ fn setup_title(
                     index: *burger.get(i).unwrap(),
                     ..Default::default()
                 },
-                transform: Transform {
-                    translation: Vec3::new(160., 36. + 8. * i as f32, 3.),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(160., 36. + 8. * i as f32, 3.),
                 ..Default::default()
             })
             .insert(TitleBurgerIngredient(i))
@@ -183,10 +174,7 @@ fn handle_input(
                     alignment: TextAlignment::CENTER,
                     ..Default::default()
                 },
-                transform: Transform {
-                    translation: Vec3::new(160., 71., 1.),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(160., 71., 1.),
                 ..Default::default()
             })
             .insert(TitleUi)

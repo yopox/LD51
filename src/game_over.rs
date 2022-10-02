@@ -52,10 +52,7 @@ fn init_game_over(
                 ],
                 alignment: TextAlignment::CENTER,
             },
-            transform: Transform {
-                translation: Vec3::new(160.0, 132.0, 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(160.0, 132.0, 1.),
             ..Default::default()
         })
         .insert(GameOverUI);

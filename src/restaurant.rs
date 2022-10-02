@@ -76,10 +76,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
                 anchor: Anchor::BottomLeft,
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(184., 64., 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(184., 64., 1.),
             ..Default::default()
         })
         .insert(RestaurantUi);
@@ -90,10 +87,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
                 anchor: Anchor::BottomLeft,
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(242., 0., 2.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(242., 0., 2.),
             texture: textures.arrow.clone(),
             ..Default::default()
         })
@@ -113,10 +107,7 @@ fn init_restaurant(mut commands: Commands, textures: Res<TextureAssets>, fonts: 
                 }],
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(24., 176., 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(24., 176., 1.),
             ..Default::default()
         })
         .insert(RestaurantUi);
@@ -147,10 +138,7 @@ fn show_order(
                         color: Color::rgba(1., 1., 1., 0.),
                         ..Default::default()
                     },
-                    transform: Transform {
-                        translation: Vec3::new(192., ingredient_y, ingredient_z),
-                        ..Default::default()
-                    },
+                    transform: Transform::from_xyz(192., ingredient_y, ingredient_z),
                     ..Default::default()
                 })
                 .insert(Animator::new(
@@ -247,10 +235,7 @@ fn spawn_menu_item(
                 }],
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec3::new(44., 158. - 16. * item_number as f32, 1.),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(44., 158. - 16. * item_number as f32, 1.),
             ..Default::default()
         })
         .insert(CurrentMenuIngredient(ingredient))
