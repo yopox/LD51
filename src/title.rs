@@ -115,7 +115,7 @@ fn setup_title(
                     ..Default::default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(160., 40. + 8. * i as f32, 3.),
+                    translation: Vec3::new(160., 36. + 8. * i as f32, 3.),
                     ..Default::default()
                 },
                 ..Default::default()

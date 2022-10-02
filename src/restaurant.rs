@@ -143,7 +143,7 @@ fn show_order(
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(192., 72. + 8. * i as f32, 2.),
+                        translation: Vec3::new(192., 64. + 8. * i as f32, 2. + i as f32 / 20.),
                         ..Default::default()
                     },
                     ..Default::default()
