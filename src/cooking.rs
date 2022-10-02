@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_tweening::{Animator, EaseFunction, Tween, TweenCompleted, TweeningType};
+use bevy_tweening::{Animator, Delay, EaseFunction, Sequence, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
 use crate::{GameState, Labels, tween};
@@ -99,7 +99,7 @@ fn add_ingredient(
                     ..Default::default()
                 })
                 .insert(Animator::new(tween::tween_opacity(tween::TWEEN_TIME / 2, true)))
-                .insert(Animator::new(tween::tween_position(ingredient_pos_starting, ingredient_pos, ingredient_z)))
+                .insert(Animator::new(tween::tween_position(ingredient_pos_starting, ingredient_pos, ingredient_z, tween::TWEEN_TIME)))
                 .insert(CurrentBurgerIngredient)
                 .insert(CookingUI);
 
@@ -129,7 +129,8 @@ fn delete_current(
                         tween::tween_position(
                             transform.translation.xy(),
                             transform.translation.xy().add(Vec2::new(8., 0.)),
-                            transform.translation.z
+                            transform.translation.z,
+                            tween::TWEEN_TIME,
                         )
                     ))
                     .remove::<CurrentBurgerIngredient>();
@@ -157,18 +158,29 @@ fn send_order(
         if *char == ' ' {
             if current_burger.ingredients.len() > 0 {
                 for (entity, transform) in ingredients.iter() {
+                    let ingredient_position = transform.translation.xy();
                     commands
                         .entity(entity)
                         .insert(Animator::new(
-                            tween::tween_opacity(tween::TWEEN_TIME, false)
-                                .with_completed_event(0)
+                            Delay::new(Duration::from_millis(tween::TWEEN_TIME / 6))
+                                .then(tween::tween_opacity(tween::TWEEN_TIME, false)
+                                    .with_completed_event(0))
                         ))
                         .insert(Animator::new(
-                            tween::tween_position(
-                                transform.translation.xy(),
-                                transform.translation.xy().add(Vec2::new(0., 4.)),
-                                transform.translation.z
-                            )
+                            Sequence::new([
+                                tween::tween_position(
+                                    ingredient_position.clone(),
+                                    ingredient_position.clone().add(Vec2::new(0., -1.)),
+                                    transform.translation.z,
+                                    tween::TWEEN_TIME / 6,
+                                ),
+                                tween::tween_position(
+                                    ingredient_position.clone().add(Vec2::new(0., -1.)),
+                                    ingredient_position.clone().add(Vec2::new(0., 4.)),
+                                    transform.translation.z,
+                                    tween::TWEEN_TIME,
+                                ),
+                            ])
                         ))
                         .remove::<CurrentBurgerIngredient>();
                 }

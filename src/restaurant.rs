@@ -154,7 +154,7 @@ fn show_order(
                     Delay::new(Duration::from_millis(50 * i as u64))
                         .then(tween::tween_position(Vec2::new(192., ingredient_y),
                                                     Vec2::new(192., ingredient_y + 4.),
-                                                    ingredient_z))
+                                                    ingredient_z, tween::TWEEN_TIME))
                 ))
                 .insert(CurrentOrderIngredient)
                 .insert(RestaurantUi);

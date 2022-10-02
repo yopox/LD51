@@ -24,11 +24,11 @@ impl Lens<TextureAtlasSprite> for TransformSpriteAlphaLens {
     }
 }
 
-pub fn tween_position(start: Vec2, end: Vec2, z: f32) -> Tween<Transform> {
+pub fn tween_position(start: Vec2, end: Vec2, z: f32, time: u64) -> Tween<Transform> {
     Tween::new(
         EaseFunction::CubicOut,
         TweeningType::Once,
-        Duration::from_millis(500),
+        Duration::from_millis(time),
         TransformPositionLens {
             start: start.extend(z),
             end: end.extend(z),
