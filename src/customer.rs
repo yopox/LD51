@@ -138,8 +138,8 @@ fn next_customer(
                 ..Default::default()
             })
             .insert(Animator::new(
-                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
-                    .then(tween::fake_tween().with_completed_event(tween::EV_CUSTOMER_ARRIVED)),
+                tween::fake_tween(tween::TWEEN_TIME)
+                    .with_completed_event(tween::EV_CUSTOMER_ARRIVED)
             ))
             .insert(Animator::new(
                 Delay::new(Duration::from_millis(tween::TWEEN_TIME))

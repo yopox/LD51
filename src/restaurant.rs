@@ -22,6 +22,7 @@ use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 /// 4. [`crate::restaurant::show_order`] -> Shows the order
 /// 5. [`crate::cooking::send_order`] -> The user sends an order and the event [`BurgerFinishedEvent`] is sent
 ///     - [`crate::cooking::display_streak_or_miss`] -> Listens to [`BurgerFinishedEvent`] and displays GUI
+///     - [`crate::cooking::animate_burger`] -> Listens to [`BurgerFinishedEvent`] and animates the burger
 ///     - [`crate::restaurant::hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
 ///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score and sends [`CallNewCustomer`]
 pub struct RestaurantPlugin;

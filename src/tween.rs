@@ -43,11 +43,11 @@ impl Lens<DummyComponent> for DummyLens {
     fn lerp(&mut self, target: &mut DummyComponent, ratio: f32) {}
 }
 
-pub fn fake_tween() -> Tween<DummyComponent> {
+pub fn fake_tween(duration: u64) -> Tween<DummyComponent> {
     Tween::new(
         EaseFunction::CubicOut,
         TweeningType::Once,
-        Duration::from_millis(1),
+        Duration::from_millis(duration),
         DummyLens
     )
 }

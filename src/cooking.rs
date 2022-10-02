@@ -44,7 +44,7 @@ impl Plugin for CookingPlugin {
                     .after(Labels::LogicReceiver)
                     .with_system(add_ingredient)
                     .with_system(display_streak_or_miss)
-                    .with_system(unspawn_ingredients_when_sending_order),
+                    .with_system(animate_burger),
             )
             .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_cooking_ui));
     }
@@ -154,12 +154,14 @@ fn send_order(
     current_burger: Res<CurrentBurger>,
     mut input: EventReader<KeyboardEvent>,
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
+    mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
             if !expecting_order.0 { return; }
 
             if current_burger.ingredients.len() > 0 {
+                commands.insert_resource(ExpectingOrder(false));
                 ev_send_burger.send(BurgerFinishedEvent(
                     current_burger.ingredients == order.ingredients,
                     current_burger.ingredients.len(),
@@ -171,13 +173,13 @@ fn send_order(
     }
 }
 
-fn unspawn_ingredients_when_sending_order(
-    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
+fn animate_burger(
     mut commands: Commands,
+    mut ev_burger_finished: EventReader<BurgerFinishedEvent>,
     mut current_burger: ResMut<CurrentBurger>,
-    mut ev_send_burger: EventReader<BurgerFinishedEvent>,
+    ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
 ) {
-    for &BurgerFinishedEvent(_, _) in ev_send_burger.iter() {
+    for BurgerFinishedEvent(success, _) in ev_burger_finished.iter() {
         for (entity, transform) in ingredients.iter() {
             let ingredient_position = transform.translation.xy();
             commands
@@ -188,26 +190,63 @@ fn unspawn_ingredients_when_sending_order(
                             .with_completed_event(tween::EV_DELETE))
                 ))
                 .insert(Animator::new(
-                    Sequence::new([
-                        tween::tween_position(
-                            ingredient_position.clone(),
-                            ingredient_position.clone().add(Vec2::new(0., -1.)),
-                            transform.translation.z,
-                            tween::TWEEN_TIME / 6,
-                        ),
-                        tween::tween_position(
-                            ingredient_position.clone().add(Vec2::new(0., -1.)),
-                            ingredient_position.clone().add(Vec2::new(0., 4.)),
-                            transform.translation.z,
-                            tween::TWEEN_TIME,
-                        ),
-                    ])
+                    match success {
+                        true => win_sequence(ingredient_position, transform.translation.z),
+                        false => lose_sequence(ingredient_position, transform.translation.z)
+                    }
                 ))
                 .remove::<CurrentBurgerIngredient>();
         }
-        commands.insert_resource(ExpectingOrder(false));
         current_burger.ingredients.clear();
+        break;
     }
+    ev_burger_finished.clear();
+}
+
+fn win_sequence(
+    position: Vec2,
+    z: f32,
+) -> Sequence<Transform> {
+    Sequence::new([
+        tween::tween_position(
+            position.clone(),
+            position.clone().add(Vec2::new(0., -1.)),
+            z,
+            tween::TWEEN_TIME / 6,
+        ),
+        tween::tween_position(
+            position.clone().add(Vec2::new(0., -1.)),
+            position.clone().add(Vec2::new(0., 4.)),
+            z,
+            tween::TWEEN_TIME,
+        ),
+    ])
+}
+
+fn lose_sequence(
+    position: Vec2,
+    z: f32,
+) -> Sequence<Transform> {
+    let amplitude = 3.;
+    let time_factor = 6;
+
+    let mut seq = vec![tween::tween_position(
+        position.clone(),
+        position.clone().add(Vec2::new(-1. * amplitude, 0.)),
+        z,
+        tween::TWEEN_TIME / time_factor,
+    )];
+
+    for i in 0..6 {
+        let modif = if i % 2 == 0 { 1. } else { -1. };
+        seq.push(tween::tween_position(
+            position.clone().add(Vec2::new(-1. * amplitude * modif as f32, 0.)),
+            position.clone().add(Vec2::new(amplitude * modif as f32, 0.)),
+            z,
+            tween::TWEEN_TIME / time_factor,
+        ))
+    }
+    Sequence::new(seq)
 }
 
 fn display_streak_or_miss(
