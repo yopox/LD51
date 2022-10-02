@@ -43,6 +43,7 @@ impl Plugin for OrderPlugin {
 
         app.insert_resource(menu_reference)
             .init_resource::<Order>()
+            .init_resource::<MenuOnDisplay>()
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
             .add_system_set(SystemSet::on_enter(GameState::Cooking)
@@ -62,10 +63,7 @@ fn init_menu(
     menu: Res<Menu>,
     mut menu_on_display: ResMut<MenuOnDisplay>,
 ) {
-    menu_on_display.ingredients.clear();
-    menu.into::<MenuOnDisplay>().ingredients.iter().for_each(
-        |i| menu_on_display.ingredients.push(*i)
-    );
+    menu_on_display.ingredients = menu.basic_ingredients();
 }
 
 fn add_order(

@@ -231,21 +231,18 @@ impl Menu {
             }
         };
     }
-}
 
-impl Into<MenuOnDisplay> for Menu {
-    fn into(self) -> MenuOnDisplay {
-        MenuOnDisplay {
-            ingredients: match self {
-                Menu::Uno => vec![
-                    Ingredient::Steak,
+    pub fn basic_ingredients(&self) -> Vec<Ingredient> {
+        match self {
+            Menu::Uno => {
+                let additional_ingredient =
                     vec![Ingredient::Salad, Ingredient::Ketchup, Ingredient::Cheese]
                         .iter()
                         .choose(&mut thread_rng())
                         .copied()
-                        .unwrap(),
-                ],
-            },
+                        .unwrap();
+                vec![Ingredient::Steak, additional_ingredient]
+            }
         }
     }
 }
