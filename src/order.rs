@@ -39,10 +39,10 @@ pub struct BurgerFinishedEvent(pub bool, pub usize);
 
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(Menu::Uno)
+        let menu_reference = Menu::Uno;
+
+        app.insert_resource(menu_reference)
             .init_resource::<Order>()
-            .init_resource::<MenuOnDisplay>()
             .add_event::<NewOrderEvent>()
             .add_event::<BurgerFinishedEvent>()
             .add_system_set(SystemSet::on_enter(GameState::Cooking)
@@ -58,38 +58,26 @@ impl Plugin for OrderPlugin {
             );
     }
 }
-
 fn init_menu(
     menu: Res<Menu>,
     mut menu_on_display: ResMut<MenuOnDisplay>,
 ) {
     menu_on_display.ingredients.clear();
-    MenuOnDisplay::from(*menu).ingredients.iter().for_each(
+    menu.into::<MenuOnDisplay>().ingredients.iter().for_each(
         |i| menu_on_display.ingredients.push(*i)
     );
 }
 
-fn generate_order(ingredients: &Vec<Ingredient>) -> Vec<Ingredient> {
-    let mut rng = thread_rng();
-    let nb_dist = rand::distributions::Uniform::new(1, ingredients.len());
-    let nb = rng.sample(nb_dist);
-    let mut recipe = vec![Ingredient::Bread];
-    ingredients
-        .choose_multiple(&mut rng, nb).cloned().collect::<Vec<Ingredient>>().iter()
-        .for_each(|x| recipe.push(*x));
-    recipe.push(Ingredient::Bread);
-    return recipe;
-}
-
 fn add_order(
     menu: Res<MenuOnDisplay>,
+    menu_ref: Res<Menu>,
     time: Res<Time>,
     mut order: ResMut<Order>,
     mut new_order_reader: EventReader<NewOrderEvent>,
     mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
     for _ in new_order_reader.iter() {
-        order.ingredients = generate_order(&menu.ingredients);
+        order.ingredients = menu_ref.generate_order(&menu.ingredients);
         order.creation_time = time.time_since_startup();
         ev_show_order.send(ShowOrderEvent);
     }

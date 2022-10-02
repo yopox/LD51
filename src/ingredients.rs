@@ -1,3 +1,10 @@
+use std::cmp::min;
+
+use bevy::utils::tracing::subscriber::with_default;
+use rand::prelude::*;
+
+use crate::order::MenuOnDisplay;
+
 #[derive(Clone, Eq, PartialEq, Copy)]
 pub enum Ingredient {
     Bread,
@@ -107,6 +114,8 @@ pub enum Menu {
     Uno,
 }
 
+const MAX_SIZE_OF_BURGER: usize = 10;
+
 impl Menu {
     // pub fn name(&self) -> &'static str {
     //     match self {
@@ -132,6 +141,111 @@ impl Menu {
                 Ingredient::Mayo,
                 Ingredient::Ketchup,
             ],
+        }
+    }
+
+    pub fn generate_order(&self, ingredients: &Vec<Ingredient>) -> Vec<Ingredient> {
+        return match self {
+            Menu::Uno => {
+                let mut rng = thread_rng();
+
+                // random_ingredients are the ingredients that will be chosen at random
+                let mut random_ingredients: Vec<Ingredient> = ingredients
+                    .into_iter()
+                    // Remove the special ingredients that we don't want interfering with our stuff
+                    .filter(|i| match i {
+                        Ingredient::Steak => false,
+                        Ingredient::Chicken => false,
+                        Ingredient::Mayo => false,
+                        Ingredient::Ketchup => false,
+                        _ => true,
+                    })
+                    .copied()
+                    .collect();
+
+                let possible_ketchup = ingredients.contains(&Ingredient::Ketchup);
+                let possible_mayo = ingredients.contains(&Ingredient::Mayo);
+                let is_there_sauce = random() && (possible_ketchup || possible_mayo);
+                let nb_sauces = if is_there_sauce { 1 } else { 0 };
+
+                // Choose a meat for the burger
+                let meat = if ingredients.contains(&Ingredient::Chicken) && random() {
+                    Ingredient::Chicken
+                } else {
+                    Ingredient::Steak
+                };
+
+                // Possible double ingredients
+                random_ingredients.push(meat);
+                if ingredients.contains(&Ingredient::Salad) {
+                    random_ingredients.push(Ingredient::Salad)
+                }
+                if ingredients.contains(&Ingredient::Cheese) {
+                    random_ingredients.push(Ingredient::Cheese)
+                }
+
+                // Choose a number of ingredients
+                // We guard this otherwise rand fires a runtime error
+                let nb = if random_ingredients.len() <= 0 {
+                    0
+                } else {
+                    // The maximum number of ingredients that is possible to generate in this configuration
+                    // MAX_SIZE_OF_BURGER - nb_bread - nb_meat_inserted_at_the_end - nb_sauces
+                    let max_nb_ingredients = MAX_SIZE_OF_BURGER - 2 - 1 - nb_sauces;
+                    // We use a linear distribution, ie
+                    //      P(x) = (x + 1) / k
+                    // where k is a normalisation constant
+                    //       1 avoids the weight 0 for 0.
+                    // And we go up further one, because it is removed from the range (thus '+ 2')
+                    let weights = 1..min(random_ingredients.len(), max_nb_ingredients) + 2;
+                    let nb_dist = rand::distributions::WeightedIndex::new(weights).unwrap();
+                    // We sample in that dist
+                    rng.sample(nb_dist)
+                };
+
+                // We chose nb ingredients from the possible ingredients
+                let mut recipe: Vec<Ingredient> = random_ingredients
+                    .choose_multiple(&mut rng, nb)
+                    .into_iter()
+                    .copied()
+                    .collect();
+
+                // Push the necessary meat at a random index
+                recipe.push(meat);
+                recipe.shuffle(&mut rng);
+
+                // Add maybe some sauces on top of it
+                if is_there_sauce {
+                    if !possible_mayo || (possible_ketchup && possible_mayo && random()) {
+                        recipe.push(Ingredient::Ketchup)
+                    } else {
+                        recipe.push(Ingredient::Mayo)
+                    }
+                }
+
+                // Add the bread on top and at bottom
+                recipe.insert(0, Ingredient::Bread);
+                recipe.push(Ingredient::Bread);
+
+                recipe
+            }
+        };
+    }
+}
+
+impl Into<MenuOnDisplay> for Menu {
+    fn into(self) -> MenuOnDisplay {
+        MenuOnDisplay {
+            ingredients: match self {
+                Menu::Uno => vec![
+                    Ingredient::Steak,
+                    vec![Ingredient::Salad, Ingredient::Ketchup, Ingredient::Cheese]
+                        .iter()
+                        .choose(&mut thread_rng())
+                        .copied()
+                        .unwrap(),
+                ],
+            },
         }
     }
 }
