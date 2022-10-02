@@ -99,7 +99,7 @@ impl Ingredient {
             Ingredient::Chicken => "Chicken",
             Ingredient::Mushrooms => "Mushrooms",
             Ingredient::Onions => "Onions",
-            Ingredient::Mayo => "Mayonnaise",
+            Ingredient::Mayo => "Mayo",
             Ingredient::Ketchup => "Ketchup",
         }
         .to_string()

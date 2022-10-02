@@ -253,7 +253,7 @@ fn spawn_menu_item(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
 ) {
-    let button_pos = Vec2::new(24., 145. - 16. * item_number as f32);
+    let button_pos = Vec2::new(20., 145. - 16. * item_number as f32);
     spawn_button(
         &mut commands,
         button_pos,
@@ -275,7 +275,7 @@ fn spawn_menu_item(
                 }],
                 ..Default::default()
             },
-            transform: Transform::from_xyz(44., 158. - 16. * item_number as f32, 1.),
+            transform: Transform::from_xyz(40., 158. - 16. * item_number as f32, 1.),
             ..Default::default()
         })
         .insert(CurrentMenuIngredient(ingredient))
