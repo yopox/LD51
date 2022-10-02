@@ -1,9 +1,6 @@
 use std::cmp::min;
 
-use bevy::utils::tracing::subscriber::with_default;
 use rand::prelude::*;
-
-use crate::order::MenuOnDisplay;
 
 #[derive(Clone, Eq, PartialEq, Copy)]
 pub enum Ingredient {
@@ -163,7 +160,7 @@ impl Menu {
                     .copied()
                     .collect();
 
-                // A bit of sauce intelligence to determine how many sauce we are going to put
+                // A bit of sauce intelligence to determine how much sauce we are going to put
                 let possible_ketchup = ingredients.contains(&Ingredient::Ketchup);
                 let possible_mayo = ingredients.contains(&Ingredient::Mayo);
                 let is_there_sauce = random() && (possible_ketchup || possible_mayo);
@@ -176,12 +173,12 @@ impl Menu {
                     Ingredient::Steak
                 };
 
-                // Possible triple meat
-                random_ingredients.push(meat);
-
                 // Double every ingredient
                 let ri: Vec<Ingredient> = random_ingredients.iter().copied().collect();
                 random_ingredients.extend(ri.into_iter());
+
+                // Possible double meat
+                random_ingredients.push(meat);
 
                 // Choose a number of ingredients
                 // We guard this otherwise rand fires a runtime error
@@ -212,6 +209,12 @@ impl Menu {
                 // Push the necessary meat at a random index
                 recipe.push(meat);
                 recipe.shuffle(&mut rng);
+
+                // Triple meat possibility
+                if random::<f32>() < 0.1 && recipe.len() < MAX_SIZE_OF_BURGER - 2 {
+                    recipe.push(meat);
+                    recipe.shuffle(&mut rng);
+                }
 
                 // Add maybe some sauces on top of it
                 if is_there_sauce {
