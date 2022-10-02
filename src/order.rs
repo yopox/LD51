@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::TweenCompleted;
 use rand::prelude::*;
 
-use crate::{GameState, Labels, tween};
+use crate::{GameState, Labels};
 use crate::cooking::ExpectingOrder;
+use crate::customer::CallNewCustomer;
 use crate::ingredients::{Ingredient, Menu};
 use crate::restaurant::ShowOrderEvent;
 use crate::score::{LifeIcon, Score};
@@ -70,18 +70,17 @@ fn add_order(
     time: Res<Time>,
     mut commands: Commands,
     mut order: ResMut<Order>,
-    mut ev_tween_completed: EventReader<TweenCompleted>,
+    mut ev_new_customer: EventReader<CallNewCustomer>,
     mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
-    for TweenCompleted { entity: _entity, user_data } in ev_tween_completed.iter() {
-        if *user_data != tween::EV_CUSTOMER_ARRIVED { continue }
+    for CallNewCustomer in ev_new_customer.iter() {
         order.ingredients = menu_ref.generate_order(&menu.ingredients);
         order.creation_time = time.time_since_startup();
         commands.insert_resource(ExpectingOrder(true));
         ev_show_order.send(ShowOrderEvent);
         break;
     }
-    ev_tween_completed.clear();
+    ev_new_customer.clear();
 }
 
 fn receive_burger(

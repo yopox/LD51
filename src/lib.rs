@@ -13,7 +13,7 @@ use crate::order::OrderPlugin;
 use crate::restaurant::RestaurantPlugin;
 use crate::score::ScorePlugin;
 use crate::title::TitlePlugin;
-use crate::tween::{DummyComponent, TweenPlugin};
+use crate::tween::TweenPlugin;
 
 mod input;
 mod audio;
@@ -61,7 +61,6 @@ impl Plugin for GamePlugin {
             .add_plugin(CustomerPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameOverPlugin)
-            .add_system(component_animator_system::<TextureAtlasSprite>)
-            .add_system(component_animator_system::<DummyComponent>);
+            .add_system(component_animator_system::<TextureAtlasSprite>);
     }
 }

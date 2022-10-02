@@ -11,9 +11,8 @@ use crate::Transform;
 pub const TWEEN_TIME: u64 = 500;
 
 pub const EV_DELETE: u64 = 0;
-pub const EV_CUSTOMER_ARRIVED: u64 = 1;
-pub const EV_CUSTOMER_WAITING_TIME_ELAPSED: u64 = 2;
-pub const EV_CUSTOMER_EXITED: u64 = 3;
+pub const EV_CUSTOMER_WAITING_TIME_ELAPSED: u64 = 1;
+pub const EV_CUSTOMER_EXITED: u64 = 2;
 
 pub struct TweenPlugin;
 
@@ -31,26 +30,6 @@ fn delete_entities(
         if *user_data != EV_DELETE { continue; }
         commands.entity(*entity).despawn();
     }
-}
-
-#[derive(Component)]
-pub struct DummyComponent;
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct DummyLens;
-
-#[allow(unused_variables)]
-impl Lens<DummyComponent> for DummyLens {
-    fn lerp(&mut self, target: &mut DummyComponent, ratio: f32) {}
-}
-
-pub fn fake_tween(duration: u64) -> Tween<DummyComponent> {
-    Tween::new(
-        EaseFunction::CubicOut,
-        TweeningType::Once,
-        Duration::from_millis(duration),
-        DummyLens
-    )
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]

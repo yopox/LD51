@@ -4,10 +4,10 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::{Animator, Delay, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
+use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
-use crate::{DummyComponent, GameState, Labels, tween};
+use crate::{GameState, Labels, tween};
 use crate::cooking::CurrentBurger;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
@@ -121,22 +121,16 @@ fn customer_enter(
                 ..Default::default()
             })
             .insert(Animator::new(
-                tween::fake_tween(tween::TWEEN_TIME)
-                    .with_completed_event(tween::EV_CUSTOMER_ARRIVED),
+                tween::tween_opacity(tween::TWEEN_TIME, true),
             ))
             .insert(Animator::new(
-                Delay::new(Duration::from_millis(tween::TWEEN_TIME))
-                    .then(tween::tween_opacity(tween::TWEEN_TIME, true)),
-            ))
-            .insert(Animator::new(
-                Delay::new(Duration::from_millis(tween::TWEEN_TIME)).then(tween::tween_position(
+                tween::tween_position(
                     customer_pos.xy().clone().add(Vec2::new(32., 0.)),
                     customer_pos.xy().clone(),
                     customer_pos.z,
                     tween::TWEEN_TIME,
-                )),
+                ),
             ))
-            .insert(DummyComponent)
             .insert(CurrentCustomer)
             .insert(CustomerUI);
     }

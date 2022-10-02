@@ -17,8 +17,8 @@ use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 
 /// Flow of the restaurant:
 /// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
-/// 2. [`crate::customer::customer_enter`] -> Sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_ARRIVED }`] when the customer appears
-/// 3. [`crate::order::add_order`] -> Generates the order of the customer and sends [`ShowOrderEvent`]
+/// 2. [`crate::customer::customer_enter`] -> Listens to [`crate::customer::CallNewCustomer`] and make the customer appears
+/// 3. [`crate::order::add_order`] -> Listens to [`crate::customer::CallNewCustomer`], generates the order of the customer and sends [`ShowOrderEvent`]
 /// 4. [`show_order`] -> Shows the order
 /// 5. [`crate::cooking::send_order`] -> The user sends an order and the event [`BurgerFinishedEvent`] is sent
 ///     - [`crate::cooking::display_streak_or_miss`] -> Listens to [`BurgerFinishedEvent`] and displays GUI
