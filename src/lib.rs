@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::*;
-use bevy_tweening::Lens;
+use bevy_tweening::{component_animator_system, Lens};
 
 use crate::audio::InternalAudioPlugin;
 use crate::button::ButtonPlugin;
@@ -26,6 +26,7 @@ mod restaurant;
 mod score;
 mod game_over;
 mod customer;
+mod tween;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -57,6 +58,7 @@ impl Plugin for GamePlugin {
             .add_plugin(RestaurantPlugin)
             .add_plugin(CustomerPlugin)
             .add_plugin(ScorePlugin)
-            .add_plugin(GameOverPlugin);
+            .add_plugin(GameOverPlugin)
+            .add_system(component_animator_system::<TextureAtlasSprite>);
     }
 }

@@ -2,10 +2,11 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy_tweening::{Animator, Delay};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
-use crate::{GameState, Labels};
+use crate::{GameState, Labels, tween};
 use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
@@ -134,20 +135,34 @@ fn show_order(
         }
 
         for i in 0..order.ingredients.len() {
+            let ingredient_y = 60. + 8. * i as f32;
+            let ingredient_z = 2. + i as f32 / 20.;
+
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: textures.ingredients.clone(),
                     sprite: TextureAtlasSprite {
                         index: order.ingredients.get(i).unwrap().atlas_key(i == 0),
                         anchor: Anchor::BottomLeft,
+                        color: Color::rgba(1., 1., 1., 0.),
                         ..Default::default()
                     },
                     transform: Transform {
-                        translation: Vec3::new(192., 64. + 8. * i as f32, 2. + i as f32 / 20.),
+                        translation: Vec3::new(192., ingredient_y, ingredient_z),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
+                .insert(Animator::new(
+                    Delay::new(Duration::from_millis(50 * i as u64))
+                        .then(tween::tween_opacity(tween::TWEEN_TIME))
+                ))
+                .insert(Animator::new(
+                    Delay::new(Duration::from_millis(50 * i as u64))
+                        .then(tween::tween_position(Vec2::new(192., ingredient_y),
+                                                    Vec2::new(192., ingredient_y + 4.),
+                                                    ingredient_z))
+                ))
                 .insert(CurrentOrderIngredient)
                 .insert(RestaurantUi);
         }
