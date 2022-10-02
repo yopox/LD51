@@ -223,8 +223,9 @@ fn add_ingredient_watcher(
     timer.0.tick(time.delta());
 
     if timer.0.finished() {
-        menu.ingredients().shuffle(&mut thread_rng());
-        for ingredient in menu.ingredients() {
+        let mut ingredients = menu.ingredients().clone();
+        ingredients.shuffle(&mut thread_rng());
+        for ingredient in ingredients {
             if menu_on_display.ingredients.len() < MENU_SIZE && !menu_on_display.ingredients.contains(&ingredient) {
                 ev_add_ingredient.send(AddIngredientEvent(ingredient));
                 return;
