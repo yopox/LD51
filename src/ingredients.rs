@@ -163,10 +163,6 @@ impl Menu {
                     .copied()
                     .collect();
 
-                // Double every ingredient
-                let ri: Vec<Ingredient> = random_ingredients.iter().copied().collect();
-                random_ingredients.extend(ri.into_iter());
-
                 // A bit of sauce intelligence to determine how many sauce we are going to put
                 let possible_ketchup = ingredients.contains(&Ingredient::Ketchup);
                 let possible_mayo = ingredients.contains(&Ingredient::Mayo);
@@ -182,6 +178,10 @@ impl Menu {
 
                 // Possible triple meat
                 random_ingredients.push(meat);
+
+                // Double every ingredient
+                let ri: Vec<Ingredient> = random_ingredients.iter().copied().collect();
+                random_ingredients.extend(ri.into_iter());
 
                 // Choose a number of ingredients
                 // We guard this otherwise rand fires a runtime error
