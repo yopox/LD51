@@ -108,11 +108,11 @@ pub enum Menu {
 }
 
 impl Menu {
-    pub fn name(&self) -> &'static str {
-        match self {
-            Menu::Uno => "Menu Uno",
-        }
-    }
+    // pub fn name(&self) -> &'static str {
+    //     match self {
+    //         Menu::Uno => "Menu Uno",
+    //     }
+    // }
 
     pub fn ingredients(&self) -> Vec<Ingredient> {
         match self {

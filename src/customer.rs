@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
-use bevy_tweening::{Animator, EaseFunction, EaseMethod, Tracks, Tween, TweeningType};
-use bevy_tweening::lens::{TextColorLens, TransformPositionLens, TransformScaleLens};
+use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweeningType};
+use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
 use crate::GameState;
 use crate::loading::TextureAssets;

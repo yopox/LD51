@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::*;
-use bevy_tweening::{component_animator_system, Lens};
+use bevy_tweening::component_animator_system;
 
 use crate::audio::InternalAudioPlugin;
 use crate::button::ButtonPlugin;
