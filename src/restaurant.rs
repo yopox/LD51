@@ -9,7 +9,6 @@ use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
 
 use crate::{GameState, Labels, tween};
-use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
@@ -82,12 +81,9 @@ struct RestaurantUi;
 
 fn init_restaurant(
     mut commands: Commands,
-    mut bgm: EventWriter<PlayBgmEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>
 ) {
-    bgm.send(PlayBgmEvent(BGM::CLASSIC));
-
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),
@@ -224,7 +220,7 @@ struct AddIngredientTimer(pub Timer);
 
 pub struct AddIngredientEvent(pub Ingredient);
 
-static MENU_SIZE: usize = 8;
+pub static MENU_SIZE: usize = 8;
 
 fn add_ingredient_watcher(
     time: Res<Time>,
@@ -263,7 +259,12 @@ fn add_ingredient_to_menu(
             });
         } else {
             // Replace a menu item
-            let to_replace = thread_rng().gen_range(2..MENU_SIZE);
+            let mut to_replace = thread_rng().gen_range(2..MENU_SIZE);
+            if !ingredient.is_meat() && menu.ingredients.iter().filter(|i| i.is_meat()).count() < 2 {
+                while menu.ingredients.get(to_replace).unwrap().is_meat() {
+                    to_replace = thread_rng().gen_range(2..MENU_SIZE);
+                }
+            }
             menu.ingredients.remove(to_replace);
             menu.ingredients.insert(to_replace, ingredient);
             ev_show_ingredient.send(ShowIngredientEvent {

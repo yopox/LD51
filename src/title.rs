@@ -8,6 +8,7 @@ use bevy_tweening::lens::TransformPositionLens;
 
 use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::spawn_button;
+use crate::cooking::MadnessMode;
 use crate::GameState;
 use crate::input::{Actions, KeyboardReleaseEvent};
 use crate::loading::{FontAssets, TextureAssets};
@@ -155,7 +156,7 @@ fn handle_input(
         // Spawn options & buttons
         let options = vec![
             ('c', "classic", 86.),
-            ('m', "madness", 66.),
+            ('d', "madness", 66.),
             ('u', "music", 46.),
         ];
 
@@ -198,9 +199,11 @@ fn handle_input(
     for KeyboardReleaseEvent(char) in events.iter() {
         match *char {
             'c' => {
+                commands.insert_resource(MadnessMode(false));
                 state.set(GameState::Cooking).unwrap();
             }
             'd' => {
+                commands.insert_resource(MadnessMode(true));
                 state.set(GameState::Cooking).unwrap();
             }
             'u' => {

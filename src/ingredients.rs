@@ -2,6 +2,8 @@ use std::cmp::min;
 
 use rand::prelude::*;
 
+use crate::restaurant::MENU_SIZE;
+
 #[derive(Clone, Eq, PartialEq, Copy, Hash)]
 pub enum Ingredient {
     Bread,
@@ -22,6 +24,13 @@ pub enum Ingredient {
 }
 
 impl Ingredient {
+    pub fn is_meat(&self) -> bool {
+        match self {
+            Ingredient::Steak | Ingredient::Chicken => true,
+            _ => false
+        }
+    }
+
     pub fn from_key(key: &char) -> Option<Self> {
         match key {
             'b' => Some(Self::Bread),
@@ -168,10 +177,10 @@ impl Menu {
                 let nb_sauces = if is_there_sauce { 1 } else { 0 };
 
                 // Choose a meat for the burger
-                let meat = if ingredients.contains(&Ingredient::Chicken) && random() {
-                    Ingredient::Chicken
+                let meat = if ingredients.contains(&Ingredient::Chicken) && ingredients.contains(&Ingredient::Steak) {
+                    if random() { Ingredient::Chicken } else { Ingredient::Steak }
                 } else {
-                    Ingredient::Steak
+                    *ingredients.iter().find(|i| i.is_meat()).unwrap()
                 };
 
                 // Double every ingredient
@@ -235,17 +244,29 @@ impl Menu {
         };
     }
 
-    pub fn basic_ingredients(&self) -> Vec<Ingredient> {
+    pub fn basic_ingredients(&self, madness_mode: bool) -> Vec<Ingredient> {
+        let ingredients_nb = if madness_mode { MENU_SIZE } else { 1 };
         match self {
             Menu::Uno => {
-                // TODO: Madness mode
+                let mut ingredients = vec![Ingredient::Bread];
+                ingredients.push(if random() { Ingredient::Steak } else { Ingredient::Chicken });
                 let additional_ingredient =
                     vec![Ingredient::Salad, Ingredient::Ketchup, Ingredient::Cheese]
                         .iter()
                         .choose(&mut thread_rng())
                         .copied()
                         .unwrap();
-                vec![Ingredient::Bread, Ingredient::Steak, additional_ingredient]
+                ingredients.push(additional_ingredient);
+                while ingredients.len() <= ingredients_nb {
+                    let ingredient = Menu::Uno.ingredients()
+                        .iter()
+                        .filter(|i| !ingredients.contains(*i))
+                        .choose(&mut thread_rng())
+                        .unwrap()
+                        .clone();
+                    ingredients.push(ingredient);
+                }
+                ingredients
             }
         }
     }

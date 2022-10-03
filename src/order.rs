@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::utils::HashSet;
 
 use crate::{GameState, Labels};
-use crate::cooking::ExpectingOrder;
+use crate::cooking::{ExpectingOrder, MadnessMode};
 use crate::customer::CallNewCustomer;
 use crate::ingredients::{Ingredient, Menu};
 use crate::restaurant::{AddIngredientEvent, ShowOrderEvent};
@@ -53,12 +53,13 @@ impl Plugin for OrderPlugin {
 
 fn init_menu(
     menu: Res<Menu>,
+    madness_mode: Res<MadnessMode>,
     mut menu_on_display: ResMut<MenuOnDisplay>,
     mut ev_add_ingredient: EventWriter<AddIngredientEvent>,
 ) {
     menu_on_display.ingredients.clear();
     menu_on_display.ingredients_seen.clear();
-    for i in menu.basic_ingredients() {
+    for i in menu.basic_ingredients(madness_mode.0) {
         ev_add_ingredient.send(AddIngredientEvent(i));
     }
 }
