@@ -2,8 +2,11 @@
 
 ![](promo/miam.png)
 
+![](promo/gameplay.png)
+
 miam is a cooking game in which you have to make burgers by pressing the letters corresponding to the ingredients.
 However, the chef keeps changing his mind and changes the menu every 10 seconds!
+
 
 ![](promo/menu.png)
 
