@@ -352,7 +352,7 @@ fn replace_menu_item(
                 commands
                     .entity(*child)
                     .insert(Animator::new(
-                        tween_text_opacity(Color::BLACK, TWEEN_TIME * 2, false)
+                        tween_text_opacity(Color::WHITE, TWEEN_TIME * 2, false)
                     ));
             }
         }
