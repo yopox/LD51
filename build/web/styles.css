@@ -19,4 +19,5 @@ body {
     background-color: #555;
     width: 1280px;
     height: 720px;
+    image-rendering: pixelated;
 }
