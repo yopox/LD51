@@ -56,7 +56,7 @@ pub fn spawn_button(
                 color: Color::rgba(1., 1., 1., if hidden { 0. } else { 1. }),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(position.x, position.y, 2.),
+            transform: Transform::from_xyz(position.x, position.y, 8.),
             ..Default::default()
         })
         .add_child(child)

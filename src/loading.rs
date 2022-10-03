@@ -72,4 +72,6 @@ pub struct TextureAssets {
 
     #[asset(path = "game_over.png")]
     pub game_over: Handle<Image>,
+    #[asset(path = "bill2.png")]
+    pub end_bill: Handle<Image>,
 }
