@@ -6,7 +6,7 @@ use bevy::sprite::TextureAtlasSprite;
 use bevy_tweening::*;
 use bevy_tweening::lens::*;
 
-use crate::Transform;
+use crate::{Labels, Transform};
 
 pub const TWEEN_TIME: u64 = 500;
 
@@ -19,7 +19,7 @@ pub struct TweenPlugin;
 
 impl Plugin for TweenPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(delete_entities);
+        app.add_system(delete_entities.after(Labels::UI));
     }
 }
 
@@ -29,7 +29,7 @@ fn delete_entities(
 ) {
     for TweenCompleted { entity, user_data } in tween_events.iter() {
         if *user_data != EV_DELETE { continue; }
-        commands.entity(*entity).despawn_recursive();
+        commands.entity(*entity).despawn();
     }
 }
 

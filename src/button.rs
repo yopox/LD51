@@ -3,6 +3,7 @@ use bevy::sprite::Anchor;
 use bevy_tweening::TweenCompleted;
 
 use crate::input::Actions;
+use crate::Labels;
 use crate::loading::{FontAssets, TextureAssets};
 use crate::tween::EV_ALLOW_BUTTON_UPDATE;
 
@@ -11,8 +12,8 @@ pub struct ButtonPlugin;
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system(update_buttons)
-            .add_system(allow_button_update);
+            .add_system(update_buttons.label(Labels::UI))
+            .add_system(allow_button_update.label(Labels::UI));
     }
 }
 
@@ -72,7 +73,7 @@ fn allow_button_update(
     mut tween_events: EventReader<TweenCompleted>,
 ) {
     for &TweenCompleted { entity, user_data } in tween_events.iter() {
-        if !user_data == EV_ALLOW_BUTTON_UPDATE { continue; }
+        if user_data != EV_ALLOW_BUTTON_UPDATE { continue; }
         commands
             .entity(entity)
             .remove::<PreventButtonUpdate>();

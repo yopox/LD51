@@ -45,12 +45,9 @@ impl Plugin for RestaurantPlugin {
                 .with_system(update_arrow)
                 .with_system(show_order)
                 .with_system(hide_order)
-                .with_system(show_menu),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::Cooking)
                 .with_system(add_ingredient_watcher)
-                .with_system(add_ingredient_to_menu),
+                .with_system(add_ingredient_to_menu)
+                .with_system(show_menu),
         )
         .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_restaurant))
         .insert_resource(AddIngredientTimer(Timer::new(
@@ -384,7 +381,6 @@ fn replace_menu_item(
                     .entity(*child)
                     .insert(Animator::new(
                         tween_text_opacity(Color::BLACK, TWEEN_TIME * 2, false)
-                            .with_completed_event(EV_DELETE)
                     ));
             }
         }
