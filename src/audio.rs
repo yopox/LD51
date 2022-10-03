@@ -45,6 +45,9 @@ pub enum SFX {
     Meat,
     Sauce,
     Vegetable,
+    CustomerSad,
+    CustomerHappy,
+    Chalk,
 }
 
 impl SFX {
@@ -57,6 +60,9 @@ impl SFX {
             SFX::Meat => audio_assets.meat.clone(),
             SFX::Sauce => audio_assets.sauce.clone(),
             SFX::Vegetable => audio_assets.vegetable.clone(),
+            SFX::CustomerSad => audio_assets.customer_sad.clone(),
+            SFX::CustomerHappy => audio_assets.customer_happy.clone(),
+            SFX::Chalk => audio_assets.chalk.clone(),
         }
     }
 }

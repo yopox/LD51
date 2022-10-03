@@ -4,17 +4,18 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_tweening::{Animator, Delay};
+use bevy_tweening::{Animator, Delay, EaseFunction, Tween, TweenCompleted, TweeningType};
 use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
 
 use crate::{GameState, Labels, spawn_sprite, tween};
+use crate::audio::{PlaySfxEvent, SFX};
 use crate::button::{Letter, PreventButtonUpdate, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
-use crate::tween::{EV_ALLOW_BUTTON_UPDATE, EV_DELETE, tween_opacity, tween_text_opacity, TWEEN_TIME};
+use crate::tween::{EV_ALLOW_BUTTON_UPDATE, EV_CHALK, EV_DELETE, EV_NOTHING, TransformAtlasSpriteAlphaLens, tween_opacity, tween_text_opacity, TWEEN_TIME};
 
 /// Flow of the restaurant:
 /// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
@@ -47,7 +48,8 @@ impl Plugin for RestaurantPlugin {
                 .with_system(hide_order)
                 .with_system(add_ingredient_watcher)
                 .with_system(add_ingredient_to_menu)
-                .with_system(show_menu),
+                .with_system(show_menu)
+                .with_system(chalk),
         )
         .add_system_set(SystemSet::on_exit(GameState::Cooking).with_system(clean_restaurant))
         .insert_resource(AddIngredientTimer(Timer::new(
@@ -285,7 +287,17 @@ fn spawn_menu_item(
         .entity(button)
         .insert(Animator::new(
             Delay::new(Duration::from_millis(if timer { TWEEN_TIME * 2 } else { 0 })).then(
-                tween_opacity(TWEEN_TIME * 3, true).with_completed_event(EV_ALLOW_BUTTON_UPDATE)
+                Tween::new(
+                    EaseFunction::CubicOut,
+                    TweeningType::Once,
+                    Duration::from_millis(1),
+                    TransformAtlasSpriteAlphaLens {
+                        start: 0.,
+                        end: 0.,
+                    }
+                ).with_completed_event(if timer { EV_CHALK } else { EV_NOTHING }).then(
+                    tween_opacity(TWEEN_TIME * 3, true).with_completed_event(EV_ALLOW_BUTTON_UPDATE)
+                )
             ))
         )
         .insert(PreventButtonUpdate)
@@ -314,6 +326,17 @@ fn spawn_menu_item(
         .insert(text_appear_animator(Color::WHITE))
         .insert(CurrentMenuIngredient(item_number))
         .insert(RestaurantUi);
+}
+
+fn chalk(
+    mut tween_events: EventReader<TweenCompleted>,
+    mut sfx: EventWriter<PlaySfxEvent>,
+) {
+    for &TweenCompleted { entity, user_data } in tween_events.iter() {
+        if user_data == EV_CHALK {
+            sfx.send(PlaySfxEvent(SFX::Chalk));
+        }
+    }
 }
 
 fn replace_menu_item(
@@ -369,7 +392,7 @@ fn show_menu(
     mut queries: ParamSet<(
         Query<(Entity, &CurrentMenuIngredient), With<Text>>,
         Query<(Entity, &Children, &CurrentMenuIngredient), With<Letter>>
-    )>
+    )>,
 ) {
     for &ShowIngredientEvent { replace, position, ingredient, timer } in ev_show_ingredient.iter() {
         if replace {
