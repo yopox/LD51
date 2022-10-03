@@ -38,6 +38,7 @@ impl Plugin for OrderPlugin {
             .init_resource::<MenuOnDisplay>()
             .add_event::<BurgerFinishedEvent>()
             .add_system_set(SystemSet::on_enter(GameState::Cooking)
+                .label(Labels::LogicSender)
                 .before(Labels::UI)
                 .with_system(init_menu)
             )
@@ -73,6 +74,8 @@ fn add_order(
     mut ev_new_customer: EventReader<CallNewCustomer>,
     mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
+    if menu.ingredients.is_empty() { return; }
+
     for CallNewCustomer in ev_new_customer.iter() {
         order.ingredients = menu_ref.generate_order(&menu.ingredients);
         order.creation_time = time.time_since_startup();
