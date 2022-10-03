@@ -8,6 +8,7 @@ use bevy_tweening::{Animator, Delay, EaseFunction, Sequence, Tween, TweeningType
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
 use crate::{GameState, Labels, tween};
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::customer::CallNewCustomer;
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
@@ -21,6 +22,7 @@ impl Plugin for CookingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CurrentBurger>()
             .insert_resource(ExpectingOrder(false))
+            .insert_resource(MadnessMode(false))
             .add_system_set(
                 SystemSet::on_enter(GameState::Cooking)
                     .before(Labels::LogicSender)
@@ -62,9 +64,16 @@ struct CurrentBurgerIngredient;
 
 pub struct ExpectingOrder(pub bool);
 
-fn start_cooking(mut ev_call_customer: EventWriter<CallNewCustomer>) {
+pub struct MadnessMode(pub bool);
+
+fn start_cooking(
+    mut ev_call_customer: EventWriter<CallNewCustomer>,
+    mut bgm: EventWriter<PlayBgmEvent>,
+    is_madness: Res<MadnessMode>,
+) {
     // Call the first customer
     ev_call_customer.send(CallNewCustomer);
+    bgm.send(PlayBgmEvent(if is_madness.0 { BGM::MADNESS } else { BGM::CLASSIC }));
 }
 
 fn add_ingredient(
@@ -77,7 +86,6 @@ fn add_ingredient(
     for KeyboardEvent(key) in input.iter() {
         if let Some(ingredient) = Ingredient::from_key(&key) {
             // Check that the ingredient has been in the menu
-            println!("Seen: {}", menu.ingredients_seen.iter().map(|i| i.name()).collect::<Vec<String>>().join(";"));
             if !menu.ingredients_seen.contains(&ingredient) {
                 continue;
             }

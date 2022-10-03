@@ -220,7 +220,7 @@ struct AddIngredientTimer(pub Timer);
 
 pub struct AddIngredientEvent(pub Ingredient);
 
-static MENU_SIZE: usize = 8;
+pub static MENU_SIZE: usize = 8;
 
 fn add_ingredient_watcher(
     time: Res<Time>,
@@ -251,7 +251,6 @@ fn add_ingredient_to_menu(
         if menu.ingredients.len() <= MENU_SIZE {
             // Add a new item at the end of the menu
             menu.ingredients.push(ingredient);
-            println!("Menu: {}", menu.ingredients.iter().map(|i| i.name()).collect::<Vec<String>>().join(";"));
             ev_show_ingredient.send(ShowIngredientEvent {
                 replace: false,
                 position: menu.ingredients.iter().position(|&i| i == ingredient).unwrap(),
@@ -259,7 +258,12 @@ fn add_ingredient_to_menu(
             });
         } else {
             // Replace a menu item
-            let to_replace = thread_rng().gen_range(2..MENU_SIZE);
+            let mut to_replace = thread_rng().gen_range(2..MENU_SIZE);
+            if !ingredient.is_meat() && menu.ingredients.iter().filter(|i| i.is_meat()).count() < 2 {
+                while menu.ingredients.get(to_replace).unwrap().is_meat() {
+                    to_replace = thread_rng().gen_range(2..MENU_SIZE);
+                }
+            }
             menu.ingredients.remove(to_replace);
             menu.ingredients.insert(to_replace, ingredient);
             ev_show_ingredient.send(ShowIngredientEvent {

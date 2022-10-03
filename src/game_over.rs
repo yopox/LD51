@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::button::{Letter, spawn_button};
+use crate::button::spawn_button;
 use crate::GameState;
 use crate::input::{KeyboardReleaseEvent, process_input};
 use crate::loading::{FontAssets, TextureAssets};
@@ -57,13 +57,14 @@ fn init_game_over(
         })
         .insert(GameOverUI);
 
-    spawn_button(
+    let button = spawn_button(
         &mut commands,
         Vec2::new(154.0, 16.0),
         'm',
         &textures,
         &fonts,
     );
+    commands.entity(button).insert(GameOverUI);
 }
 
 fn update_game_over(
@@ -80,12 +81,8 @@ fn update_game_over(
 fn clean_game_over(
     mut commands: Commands,
     spawned_ui_elements: Query<Entity, With<GameOverUI>>,
-    buttons: Query<Entity, With<Letter>>,
 ) {
     for e in &spawned_ui_elements {
-        commands.entity(e).despawn_recursive();
-    }
-    for e in buttons.iter() {
         commands.entity(e).despawn_recursive();
     }
 }

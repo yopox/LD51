@@ -2,13 +2,17 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
-use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
+use bevy_tweening::lens::TransformPositionLens;
 
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::spawn_button;
+use crate::cooking::MadnessMode;
 use crate::GameState;
 use crate::input::{Actions, KeyboardReleaseEvent};
 use crate::loading::{FontAssets, TextureAssets};
+use crate::tween::{tween_position, tween_text_opacity, TWEEN_TIME};
 
 pub struct TitlePlugin;
 
@@ -42,10 +46,12 @@ impl Plugin for TitlePlugin {
 
 fn setup_title(
     mut commands: Commands,
+    mut bgm: EventWriter<PlayBgmEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     mut state: ResMut<TitleState>,
 ) {
+    bgm.send(PlayBgmEvent(BGM::TITLE));
     state.burger_open = false;
 
     commands
@@ -124,6 +130,7 @@ fn handle_input(
     mut events: EventReader<KeyboardReleaseEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
+    audio: Res<Audio>,
     ingredients: Query<(Entity, &Transform, &TitleBurgerIngredient)>,
 ) {
     if !title_state.burger_open && input.pressed.contains(&' ') {
@@ -147,61 +154,65 @@ fn handle_input(
         }
 
         // Spawn options & buttons
-        let button = spawn_button(&mut commands, Vec2::new(160., 40.), 'c', &textures, &fonts);
-        commands
-            .entity(button)
-            .insert(TitleUi)
-            .insert(Animator::new(Tween::new(
-                EaseFunction::CubicOut,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                TransformPositionLens {
-                    start: Vec3::new(160., 40., 2.),
-                    end: Vec3::new(118., 66., 2.),
-                },
-            )));
-        commands
-            .spawn_bundle(Text2dBundle {
-                text: Text {
-                    sections: vec![TextSection {
-                        value: "classic".to_string(),
-                        style: TextStyle {
-                            font: fonts.axg.clone(),
-                            font_size: 16.0,
-                            color: Color::rgba(0., 0., 0., 0.),
-                        },
-                    }],
-                    alignment: TextAlignment::CENTER,
+        let options = vec![
+            ('c', "classic", 86.),
+            ('d', "madness", 66.),
+            ('u', "music", 46.),
+        ];
+
+        for (letter, name, y_pos) in options {
+            let y_start = 40.;
+            let button = spawn_button(&mut commands, Vec2::new(160., y_start), letter, &textures, &fonts);
+            commands
+                .entity(button)
+                .insert(TitleUi)
+                .insert(Animator::new(
+                    tween_position(Vec2::new(160., y_start), Vec2::new(118., y_pos), 2., TWEEN_TIME * 3)
+                    ));
+            commands
+                .spawn_bundle(Text2dBundle {
+                    text: Text {
+                        sections: vec![TextSection {
+                            value: name.to_string(),
+                            style: TextStyle {
+                                font: fonts.axg.clone(),
+                                font_size: 16.0,
+                                color: Color::rgba(0., 0., 0., 0.),
+                            },
+                        }],
+                        alignment: TextAlignment::CENTER,
+                        ..Default::default()
+                    },
+                    transform: Transform::from_xyz(160., y_pos - 7., 1.),
                     ..Default::default()
-                },
-                transform: Transform::from_xyz(160., 71., 1.),
-                ..Default::default()
-            })
-            .insert(TitleUi)
-            .insert(Animator::new(Tween::new(
-                EaseFunction::CubicOut,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                TextColorLens {
-                    start: Color::rgba(0., 0., 0., 0.),
-                    end: Color::rgba(0., 0., 0., 1.),
-                    section: 0
-                },
-            )))
-            .insert(Animator::new(Tween::new(
-                EaseFunction::CubicOut,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                TransformPositionLens {
-                    start: Vec3::new(160., 71. - 12., 1.),
-                    end: Vec3::new(160., 71., 1.),
-                },
-            )));
+                })
+                .insert(TitleUi)
+                .insert(Animator::new(
+                    tween_text_opacity(TWEEN_TIME * 3, true)
+                ))
+                .insert(Animator::new(
+                    tween_position(Vec2::new(160., y_pos - 7.), Vec2::new(160., y_pos + 5.), 2., TWEEN_TIME * 3)
+                ));
+        }
     }
 
     for KeyboardReleaseEvent(char) in events.iter() {
-        if *char == 'c' {
-            state.set(GameState::Cooking).unwrap();
+        match *char {
+            'c' => {
+                commands.insert_resource(MadnessMode(false));
+                state.set(GameState::Cooking).unwrap();
+            }
+            'd' => {
+                commands.insert_resource(MadnessMode(true));
+                state.set(GameState::Cooking).unwrap();
+            }
+            'u' => {
+                match audio.is_playing_sound() {
+                    true => { audio.pause(); }
+                    false => { audio.resume(); }
+                }
+            }
+            _ => {}
         }
     }
 }
