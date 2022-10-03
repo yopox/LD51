@@ -376,7 +376,8 @@ fn replace_menu_item(
                 .entity(e)
                 .insert(Animator::new(
                     tween_opacity(TWEEN_TIME * 2, false)
-                ));
+                ))
+                .insert(PreventButtonUpdate);
 
             if let Some(child) = children.get(0) {
                 commands
