@@ -65,7 +65,7 @@ pub struct TextureAssets {
     #[asset(texture_atlas(tile_size_x = 48., tile_size_y = 16., columns = 1, rows = 16, padding_x = 0., padding_y = 0.))]
     #[asset(path = "ingredients.png")]
     pub ingredients: Handle<TextureAtlas>,
-    #[asset(texture_atlas(tile_size_x = 72., tile_size_y = 80., columns = 1, rows = 1, padding_x = 0., padding_y = 0.))]
+    #[asset(texture_atlas(tile_size_x = 72., tile_size_y = 80., columns = 4, rows = 1, padding_x = 0., padding_y = 0.))]
     #[asset(path = "characters.png")]
     pub characters: Handle<TextureAtlas>,
     #[asset(texture_atlas(tile_size_x = 8., tile_size_y = 8., columns = 2, rows = 1, padding_x = 0., padding_y = 0.))]

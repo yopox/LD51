@@ -8,6 +8,7 @@ use bevy::sprite::{Anchor, MaterialMesh2dBundle};
 use bevy_pkv::PkvStore;
 use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
+use rand::{Rng, thread_rng};
 
 use crate::{GameState, Labels, spawn_sprite, tween};
 use crate::audio::{PlaySfxEvent, SFX};
@@ -121,7 +122,7 @@ fn customer_enter(
             .spawn_bundle(SpriteSheetBundle {
                 texture_atlas: textures.characters.clone(),
                 sprite: TextureAtlasSprite {
-                    index: 0,
+                    index: thread_rng().gen_range(0..4),
                     anchor: Anchor::BottomLeft,
                     color: Color::rgba(1., 1., 1., 0.),
                     ..Default::default()
