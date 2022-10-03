@@ -34,7 +34,7 @@ pub fn spawn_button(
         .spawn_bundle(Text2dBundle {
             text: Text {
                 sections: vec![TextSection {
-                    value: letter.to_uppercase().to_string(),
+                    value: letter.to_string(),
                     style: TextStyle {
                         font: fonts.axg.clone(),
                         font_size: 16.0,
@@ -44,7 +44,7 @@ pub fn spawn_button(
                 }],
                 ..Default::default()
             },
-            transform: Transform::from_xyz(4., 13., 1.),
+            transform: Transform::from_xyz(4., 14., 1.),
             ..Default::default()
         })
         .id();
