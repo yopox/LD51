@@ -38,7 +38,7 @@ pub fn spawn_button(
                     style: TextStyle {
                         font: fonts.axg.clone(),
                         font_size: 16.0,
-                        color: Color::rgba(58. / 255., 58. / 255., 58. / 255., if hidden { 0. } else { 1. }),
+                        color: Color::rgba(1., 1., 1., if hidden { 0. } else { 1. }),
                         ..Default::default()
                     },
                 }],
@@ -83,24 +83,9 @@ fn allow_button_update(
 fn update_buttons(
     actions: Res<Actions>,
     mut buttons: Query<(&Letter, &mut TextureAtlasSprite, &Children), Without<PreventButtonUpdate>>,
-    mut text: Query<&mut Text>,
 ) {
     for (letter, mut sprite, children) in buttons.iter_mut() {
         let pushed = actions.pressed.contains(&letter.char);
-        let color: Color;
-        match pushed {
-            true => {
-                sprite.index = 1;
-                color = Color::rgb(182. / 255., 182. / 255., 182. / 255.);
-            }
-            false => {
-                sprite.index = 0;
-                color = Color::rgb(58. / 255., 58. / 255., 58. / 255.);
-            }
-        }
-        if children.len() > 0 {
-            let mut child_text = text.get_mut(*children.get(0).unwrap()).unwrap();
-            child_text.sections.get_mut(0).unwrap().style.color = color;
-        }
+        sprite.index = if pushed { 1 } else { 0 };
     }
 }

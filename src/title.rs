@@ -56,14 +56,14 @@ fn setup_title(
     spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(TitleUi);
     spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5,)).insert(TitleUi);
     spawn_sprite(&mut commands, textures.plate.clone(), Vec3::new(124., 30., 0.75,)).insert(TitleUi);
-    spawn_sprite(&mut commands, textures.miam.clone(), Vec3::new(97., 128., 1.)).insert(TitleUi)
+    spawn_sprite(&mut commands, textures.miam.clone(), Vec3::new(96., 127., 1.)).insert(TitleUi)
         .insert(Animator::new(Tween::new(
             EaseFunction::QuadraticInOut,
             TweeningType::PingPong,
             Duration::from_secs(3),
             TransformPositionLens {
-                start: Vec3::new(97., 128., 1.),
-                end: Vec3::new(97., 118., 1.),
+                start: Vec3::new(97., 127., 1.),
+                end: Vec3::new(97., 117., 1.),
             },
         )));
 
@@ -75,7 +75,7 @@ fn setup_title(
                     style: TextStyle {
                         font: fonts.axg.clone(),
                         font_size: 16.0,
-                        color: Color::BLACK,
+                        color: Color::WHITE,
                     },
                 }],
                 alignment: TextAlignment::CENTER,
@@ -163,21 +163,21 @@ fn handle_input(
                             style: TextStyle {
                                 font: fonts.axg.clone(),
                                 font_size: 16.0,
-                                color: Color::rgba(0., 0., 0., 0.),
+                                color: Color::rgba(1., 1., 1., 0.),
                             },
                         }],
                         alignment: TextAlignment::CENTER,
                         ..Default::default()
                     },
-                    transform: Transform::from_xyz(160., y_pos - 7., 1.),
+                    transform: Transform::from_xyz(160., (46. + y_pos) / 2. - 7., 1.),
                     ..Default::default()
                 })
                 .insert(TitleUi)
                 .insert(Animator::new(
-                    tween_text_opacity(Color::BLACK, TWEEN_TIME * 3, true)
+                    tween_text_opacity(Color::WHITE, TWEEN_TIME * 3, true)
                 ))
                 .insert(Animator::new(
-                    tween_position(Vec2::new(160., y_pos - 7.), Vec2::new(160., y_pos + 5.), 2., TWEEN_TIME * 3)
+                    tween_position(Vec2::new(160., (46. + y_pos) / 2. - 7.), Vec2::new(160., y_pos + 5.), 2., TWEEN_TIME * 3)
                 ));
         }
     }

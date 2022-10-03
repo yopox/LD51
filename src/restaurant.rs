@@ -292,7 +292,7 @@ fn spawn_menu_item(
 
     commands
         .entity(button_text)
-        .insert(text_appear_animator(Color::rgb(58. / 255., 58. / 255., 58. / 255.)));
+        .insert(text_appear_animator(Color::WHITE));
 
     commands
         .spawn_bundle(Text2dBundle {

@@ -30,20 +30,13 @@ fn init_game_over(
     fonts: Res<FontAssets>,
 ) {
     spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(GameOverUi);
-    spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5,)).insert(GameOverUi);
+    spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5)).insert(GameOverUi);
+    spawn_sprite(&mut commands, textures.game_over.clone(), Vec3::new(160. - 136., 136. - 23., 1.)).insert(GameOverUi);
 
     commands
         .spawn_bundle(Text2dBundle {
             text: Text {
                 sections: vec![
-                    TextSection {
-                        value: "Game Over\n".to_string(),
-                        style: TextStyle {
-                            font: fonts.axg.clone(),
-                            font_size: 64.0,
-                            color: Color::WHITE,
-                        },
-                    },
                     TextSection {
                         value: format!("Your score: {}", score.score),
                         style: TextStyle {
@@ -55,20 +48,22 @@ fn init_game_over(
                 ],
                 alignment: TextAlignment::CENTER,
             },
-            transform: Transform::from_xyz(160.0, 132.0, 1.),
+            transform: Transform::from_xyz(160.0, 96.0, 1.),
             ..Default::default()
         })
         .insert(GameOverUi);
 
-    let (button, _) = spawn_button(
-        &mut commands,
-        Vec2::new(154.0, 16.0),
-        'm',
-        &textures,
-        &fonts,
-        false,
-    );
-    commands.entity(button).insert(GameOverUi);
+    let buttons = [
+        ('m', Vec2::new(124., 24.)),
+        ('i', Vec2::new(124. + 20., 24.)),
+        ('a', Vec2::new(124. + 20. * 2., 24.)),
+        ('m', Vec2::new(124. + 20. * 3., 24.)),
+    ];
+
+    for (c, pos) in buttons {
+        let (button, _) = spawn_button(&mut commands, pos, c, &textures, &fonts, false,);
+        commands.entity(button).insert(GameOverUi);
+    }
 }
 
 fn update_game_over(
@@ -76,7 +71,7 @@ fn update_game_over(
     mut state: ResMut<State<GameState>>,
 ) {
     for KeyboardReleaseEvent(l) in events.iter() {
-        if *l == 'm' {
+        if *l == 'm' || *l == 'i' || *l == 'a' {
             state.set(GameState::TitleScreen).unwrap_or_default();
         }
     }

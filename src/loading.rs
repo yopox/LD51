@@ -13,7 +13,7 @@ impl Plugin for LoadingPlugin {
                 .with_collection::<FontAssets>()
                 .with_collection::<AudioAssets>()
                 .with_collection::<TextureAssets>()
-                .continue_to_state(GameState::TitleScreen),
+                .continue_to_state(GameState::GameOver),
         );
     }
 }
@@ -67,4 +67,7 @@ pub struct TextureAssets {
     pub arrow: Handle<Image>,
     #[asset(path = "robot.png")]
     pub robot: Handle<Image>,
+
+    #[asset(path = "game_over.png")]
+    pub game_over: Handle<Image>,
 }
