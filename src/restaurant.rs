@@ -14,6 +14,7 @@ use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
+use crate::tween::{tween_text_opacity, TWEEN_TIME};
 
 /// Flow of the restaurant:
 /// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
@@ -293,6 +294,7 @@ fn spawn_menu_item(
     mut commands: &mut Commands,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
+    timer: bool,
 ) {
     let button_pos = Vec2::new(20., 145. - 16. * item_number as f32);
     let button = spawn_button(
@@ -314,7 +316,7 @@ fn spawn_menu_item(
                     style: TextStyle {
                         font: fonts.axg.clone(),
                         font_size: 16.0,
-                        color: Color::WHITE,
+                        color: Color::rgba(1., 1., 1., 0.),
                     },
                 }],
                 ..Default::default()
@@ -322,6 +324,11 @@ fn spawn_menu_item(
             transform: Transform::from_xyz(40., 158. - 16. * item_number as f32, 1.),
             ..Default::default()
         })
+        .insert(Animator::new(
+            Delay::new(Duration::from_millis(if timer { TWEEN_TIME * 2 } else { 0 })).then(
+                tween_text_opacity(Color::WHITE, TWEEN_TIME * 3, true)
+            ))
+        )
         .insert(CurrentMenuIngredient(item_number))
         .insert(RestaurantUi);
 }
@@ -336,10 +343,13 @@ fn replace_menu_item(
 ) {
     for (e, &CurrentMenuIngredient(i)) in query.iter() {
         if item_number == i {
-            commands.entity(e).despawn_recursive();
+            commands
+                .entity(e)
+                // TODO: Disappear animation
+                .despawn_recursive();
         }
     }
-    spawn_menu_item(ingredient, item_number, &mut commands, textures, fonts);
+    spawn_menu_item(ingredient, item_number, &mut commands, textures, fonts, true);
 }
 
 fn show_menu(
@@ -366,6 +376,7 @@ fn show_menu(
                 &mut commands,
                 &textures,
                 &fonts,
+                timer,
             );
         }
     }

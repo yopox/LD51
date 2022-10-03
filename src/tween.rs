@@ -69,14 +69,14 @@ pub fn tween_opacity(ms: u64, appear: bool) -> Tween<TextureAtlasSprite> {
     )
 }
 
-pub fn tween_text_opacity(ms: u64, appear: bool) -> Tween<Text> {
+pub fn tween_text_opacity(color: Color, ms: u64, appear: bool) -> Tween<Text> {
     Tween::new(
         EaseFunction::CubicOut,
         TweeningType::Once,
         Duration::from_millis(ms),
         TextColorLens {
-            start: if appear { *Color::BLACK.clone().set_a(0.) } else { Color::BLACK },
-            end: if appear { Color::BLACK } else { *Color::BLACK.clone().set_a(0.) },
+            start: if appear { *color.clone().set_a(0.) } else { color },
+            end: if appear { color } else { *color.clone().set_a(0.) },
             section: 0
         }
     )

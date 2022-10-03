@@ -189,7 +189,7 @@ fn handle_input(
                 })
                 .insert(TitleUi)
                 .insert(Animator::new(
-                    tween_text_opacity(TWEEN_TIME * 3, true)
+                    tween_text_opacity(Color::BLACK, TWEEN_TIME * 3, true)
                 ))
                 .insert(Animator::new(
                     tween_position(Vec2::new(160., y_pos - 7.), Vec2::new(160., y_pos + 5.), 2., TWEEN_TIME * 3)
