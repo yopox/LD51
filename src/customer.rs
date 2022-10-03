@@ -57,11 +57,13 @@ fn create_customer_waiting_bars(
     mut materials: ResMut<Assets<ColorMaterial>>,
     order_nb: Res<OrderNumber>,
     textures: Res<TextureAssets>,
+    madness: Res<MadnessMode>,
 ) {
     // Create customer timers
     for _ in ev_show_order.iter() {
+        let ingredient_t = if madness.0 { TIME_PER_INGREDIENT - 1. } else { TIME_PER_INGREDIENT };
         let duration = Duration::from_secs_f64(
-            EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * if order_nb.amount < 30 { TIME_PER_INGREDIENT / (1.0 + order_nb.amount as f64 / 10.0) } else { TIME_PER_INGREDIENT / 4.0 }
+            EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * if order_nb.amount < 50 { ingredient_t / (1.0 + order_nb.amount as f64 / 10.0) } else { ingredient_t / 6.0 }
         );
 
         let start_position = Vec3::new(260. + 24., 109., 2.);

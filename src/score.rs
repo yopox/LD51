@@ -31,7 +31,7 @@ impl Default for Score {
     }
 }
 
-pub const TIME_PER_INGREDIENT: f64 = 1.5;
+pub const TIME_PER_INGREDIENT: f64 = 3.;
 pub const EXTRA_TIME_PER_BURGER: f64 = 3.;
 const SCORING_SLOPE_POS: f64 = 1.;
 
