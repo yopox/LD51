@@ -34,6 +34,21 @@ pub struct AudioAssets {
     pub madness: Handle<AudioSource>,
     #[asset(path = "audio/game over.ogg")]
     pub game_over: Handle<AudioSource>,
+
+    #[asset(path = "audio/SFX/1 error.ogg")]
+    pub incorrect_order: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/2 validé.ogg")]
+    pub correct_order: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/bread.ogg")]
+    pub bread: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/lettuce.ogg")]
+    pub lettuce: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/meat.ogg")]
+    pub meat: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/sauce.ogg")]
+    pub sauce: Handle<AudioSource>,
+    #[asset(path = "audio/SFX/vegetable.ogg")]
+    pub vegetable: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]

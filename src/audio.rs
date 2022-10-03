@@ -10,46 +10,88 @@ impl Plugin for InternalAudioPlugin {
         app
             .add_plugin(AudioPlugin)
             .add_system(update_bgm)
-            .add_event::<PlayBgmEvent>();
+            .add_event::<PlayBgmEvent>()
+            .add_event::<PlaySfxEvent>()
+            .add_audio_channel::<BgmChannel>()
+            .add_audio_channel::<SfxChannel>();
     }
 }
 
 #[derive(Copy, Clone)]
 pub enum BGM {
-    TITLE,
-    CLASSIC,
-    MADNESS,
-    GAME_OVER,
+    Title,
+    Classic,
+    Madness,
+    GameOver,
 }
 
 impl BGM {
-    fn get_handle(&self, audio_assets: Res<AudioAssets>) -> Handle<AudioSource> {
+    fn get_handle(&self, audio_assets: &Res<AudioAssets>) -> Handle<AudioSource> {
         match self {
-            BGM::TITLE => audio_assets.title.clone(),
-            BGM::CLASSIC => audio_assets.classic.clone(),
-            BGM::MADNESS => audio_assets.madness.clone(),
-            BGM::GAME_OVER => audio_assets.game_over.clone(),
+            BGM::Title => audio_assets.title.clone(),
+            BGM::Classic => audio_assets.classic.clone(),
+            BGM::Madness => audio_assets.madness.clone(),
+            BGM::GameOver => audio_assets.game_over.clone(),
         }
     }
 }
 
+#[derive(Copy, Clone)]
+pub enum SFX {
+    IncorrectOrder,
+    CorrectOrder,
+    Bread,
+    Lettuce,
+    Meat,
+    Sauce,
+    Vegetable,
+}
+
+impl SFX {
+    fn get_handle(&self, audio_assets: &Res<AudioAssets>) -> Handle<AudioSource> {
+        match self {
+            SFX::IncorrectOrder => audio_assets.incorrect_order.clone(),
+            SFX::CorrectOrder => audio_assets.correct_order.clone(),
+            SFX::Bread => audio_assets.bread.clone(),
+            SFX::Lettuce => audio_assets.lettuce.clone(),
+            SFX::Meat => audio_assets.meat.clone(),
+            SFX::Sauce => audio_assets.sauce.clone(),
+            SFX::Vegetable => audio_assets.vegetable.clone(),
+        }
+    }
+}
+
+pub struct BgmChannel;
+
+pub struct SfxChannel;
+
 pub struct PlayBgmEvent(pub BGM);
+
+pub struct PlaySfxEvent(pub SFX);
 
 fn update_bgm(
     mut bgm_events: EventReader<PlayBgmEvent>,
+    mut sfx_events: EventReader<PlaySfxEvent>,
     audio_assets: Option<Res<AudioAssets>>,
-    audio: Res<Audio>,
+    bgm_channel: Res<AudioChannel<BgmChannel>>,
+    sfx_channel: Res<AudioChannel<SfxChannel>>,
 ) {
     if audio_assets.is_none() { return; }
 
     // Play BGMs
     for PlayBgmEvent(bgm) in bgm_events.iter() {
-        audio.stop();
-        audio.set_volume(0.6);
-        audio
-            .play(bgm.get_handle(audio_assets.unwrap()))
+        bgm_channel.stop();
+        bgm_channel.set_volume(0.6);
+        bgm_channel
+            .play(bgm.get_handle(&audio_assets.as_ref().unwrap()))
             .looped();
         break;
     }
     bgm_events.clear();
+
+    // Play SFXs
+    for PlaySfxEvent(sfx) in sfx_events.iter() {
+        sfx_channel.set_volume(0.3);
+        sfx_channel.play(sfx.get_handle(&audio_assets.as_ref().unwrap()));
+    }
 }

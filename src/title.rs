@@ -1,12 +1,12 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_kira_audio::{Audio, AudioControl};
+use bevy_kira_audio::{AudioChannel, AudioControl};
 use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
 use bevy_tweening::lens::TransformPositionLens;
 
 use crate::{GameState, spawn_sprite};
-use crate::audio::{BGM, PlayBgmEvent};
+use crate::audio::{BGM, BgmChannel, PlayBgmEvent, SfxChannel};
 use crate::button::spawn_button;
 use crate::cooking::MadnessMode;
 use crate::input::{Actions, KeyboardReleaseEvent};
@@ -50,7 +50,7 @@ fn setup_title(
     fonts: Res<FontAssets>,
     mut state: ResMut<TitleState>,
 ) {
-    bgm.send(PlayBgmEvent(BGM::TITLE));
+    bgm.send(PlayBgmEvent(BGM::Title));
     state.burger_open = false;
 
     spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(TitleUi);
@@ -116,7 +116,8 @@ fn handle_input(
     mut events: EventReader<KeyboardReleaseEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
-    audio: Res<Audio>,
+    bgm: Res<AudioChannel<BgmChannel>>,
+    sfx: Res<AudioChannel<SfxChannel>>,
     ingredients: Query<(Entity, &Transform, &TitleBurgerIngredient)>,
 ) {
     if !title_state.burger_open && input.pressed.contains(&' ') {
@@ -193,9 +194,9 @@ fn handle_input(
                 state.set(GameState::Cooking).unwrap();
             }
             'u' => {
-                match audio.is_playing_sound() {
-                    true => { audio.pause(); }
-                    false => { audio.resume(); }
+                match bgm.is_playing_sound() {
+                    true => { bgm.pause(); sfx.pause(); }
+                    false => { bgm.resume(); sfx.resume(); }
                 }
             }
             _ => {}

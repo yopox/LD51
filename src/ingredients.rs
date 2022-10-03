@@ -2,6 +2,7 @@ use std::cmp::min;
 
 use rand::prelude::*;
 
+use crate::audio::SFX;
 use crate::restaurant::MENU_SIZE;
 
 #[derive(Clone, Eq, PartialEq, Copy, Hash)]
@@ -112,6 +113,26 @@ impl Ingredient {
             Ingredient::Ketchup => "Ketchup",
         }
         .to_string()
+    }
+
+    pub fn sfx(&self) -> SFX {
+        match self {
+            Ingredient::Bread => SFX::Bread,
+            Ingredient::Steak => SFX::Meat,
+            Ingredient::Tomato => SFX::Vegetable,
+            Ingredient::Salad => SFX::Lettuce,
+            Ingredient::Egg => SFX::Vegetable,
+            Ingredient::Pickles => SFX::Vegetable,
+            Ingredient::Avocado => SFX::Vegetable,
+            Ingredient::Cheese => SFX::Sauce,
+            Ingredient::Bacon => SFX::Meat,
+            Ingredient::Jalapeno => SFX::Vegetable,
+            Ingredient::Chicken => SFX::Meat,
+            Ingredient::Mushrooms => SFX::Vegetable,
+            Ingredient::Onions => SFX::Vegetable,
+            Ingredient::Mayo => SFX::Sauce,
+            Ingredient::Ketchup => SFX::Sauce,
+        }
     }
 }
 

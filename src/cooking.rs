@@ -7,7 +7,7 @@ use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, Delay, Sequence};
 
 use crate::{GameState, Labels, tween};
-use crate::audio::{BGM, PlayBgmEvent};
+use crate::audio::{BGM, PlayBgmEvent, PlaySfxEvent, SFX};
 use crate::customer::CallNewCustomer;
 use crate::ingredients::Ingredient;
 use crate::input::KeyboardEvent;
@@ -73,12 +73,13 @@ fn start_cooking(
 ) {
     // Call the first customer
     ev_call_customer.send(CallNewCustomer);
-    bgm.send(PlayBgmEvent(if is_madness.0 { BGM::MADNESS } else { BGM::CLASSIC }));
+    bgm.send(PlayBgmEvent(if is_madness.0 { BGM::Madness } else { BGM::Classic }));
 }
 
 fn add_ingredient(
     mut input: EventReader<KeyboardEvent>,
     mut current_burger: ResMut<CurrentBurger>,
+    mut ev_sfx: EventWriter<PlaySfxEvent>,
     menu: Res<MenuOnDisplay>,
     textures: Res<TextureAssets>,
     mut commands: Commands,
@@ -89,6 +90,10 @@ fn add_ingredient(
             if !menu.ingredients_seen.contains(&ingredient) {
                 continue;
             }
+
+            // Play a sound
+            ev_sfx.send(PlaySfxEvent(ingredient.sfx()));
+
             // Display the added ingredient
             let ingredients_nb = current_burger.ingredients.len();
             let ingredient_pos_starting = Vec2::new(
@@ -164,6 +169,7 @@ fn send_order(
     current_burger: Res<CurrentBurger>,
     mut input: EventReader<KeyboardEvent>,
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
+    mut ev_sfx: EventWriter<PlaySfxEvent>,
     mut commands: Commands,
 ) {
     for KeyboardEvent(char) in input.iter() {
@@ -174,8 +180,10 @@ fn send_order(
 
             if current_burger.ingredients.len() > 0 {
                 commands.insert_resource(ExpectingOrder(false));
+                let correct = current_burger.ingredients == order.ingredients;
+                ev_sfx.send(PlaySfxEvent(if correct { SFX::CorrectOrder } else { SFX::IncorrectOrder }));
                 ev_send_burger.send(BurgerFinishedEvent(
-                    current_burger.ingredients == order.ingredients,
+                    correct,
                     current_burger.ingredients.len(),
                 ));
             } else {

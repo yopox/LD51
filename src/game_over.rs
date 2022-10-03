@@ -31,7 +31,7 @@ fn init_game_over(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
 ) {
-    bgm.send(PlayBgmEvent(BGM::GAME_OVER));
+    bgm.send(PlayBgmEvent(BGM::GameOver));
 
     spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(GameOverUi);
     spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5)).insert(GameOverUi);
