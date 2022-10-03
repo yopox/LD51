@@ -11,7 +11,7 @@ use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
 use crate::{GameState, Labels, spawn_sprite, tween};
 use crate::audio::{PlaySfxEvent, SFX};
-use crate::cooking::{CurrentBurger, MadnessMode};
+use crate::cooking::{CurrentBurger, MadnessMode, OrderNumber};
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
 use crate::restaurant::ShowOrderEvent;
@@ -54,12 +54,13 @@ fn create_customer_waiting_bars(
     mut ev_show_order: EventReader<ShowOrderEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    order_nb: Res<OrderNumber>,
     textures: Res<TextureAssets>,
 ) {
     // Create customer timers
     for _ in ev_show_order.iter() {
         let duration = Duration::from_secs_f64(
-            EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * TIME_PER_INGREDIENT,
+            EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * if order_nb.amount < 30 { TIME_PER_INGREDIENT / (1.0 + order_nb.amount as f64 / 10.0) } else { TIME_PER_INGREDIENT / 4.0 }
         );
 
         let start_position = Vec3::new(260. + 24., 109., 2.);

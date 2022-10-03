@@ -24,6 +24,7 @@ impl Plugin for CookingPlugin {
         app.init_resource::<CurrentBurger>()
             .insert_resource(ExpectingOrder(false))
             .insert_resource(MadnessMode(false))
+            .insert_resource(OrderNumber { amount: 0 })
             .add_system_set(
                 SystemSet::on_enter(GameState::Cooking)
                     .before(Labels::LogicSender)
@@ -66,6 +67,10 @@ struct CurrentBurgerIngredient;
 pub struct ExpectingOrder(pub bool);
 
 pub struct MadnessMode(pub bool);
+
+pub struct OrderNumber {
+    pub amount: u16,
+}
 
 fn start_cooking(
     mut ev_call_customer: EventWriter<CallNewCustomer>,
@@ -172,6 +177,7 @@ fn send_order(
     mut ev_send_burger: EventWriter<BurgerFinishedEvent>,
     mut ev_sfx: EventWriter<PlaySfxEvent>,
     mut commands: Commands,
+    mut order_nb: ResMut<OrderNumber>,
 ) {
     for KeyboardEvent(char) in input.iter() {
         if *char == ' ' {
@@ -181,6 +187,7 @@ fn send_order(
 
             if current_burger.ingredients.len() > 0 {
                 commands.insert_resource(ExpectingOrder(false));
+                order_nb.amount += &1;
                 let correct = current_burger.ingredients == order.ingredients;
                 match correct {
                     true => {
@@ -330,9 +337,11 @@ fn clean_cooking_ui(
     mut commands: Commands,
     spawned_ui_components: Query<Entity, With<CookingUI>>,
     mut order: ResMut<CurrentBurger>,
+    mut order_nb: ResMut<OrderNumber>,
 ) {
     for e in spawned_ui_components.iter() {
         commands.entity(e).despawn_recursive();
     }
     order.ingredients = vec![];
+    order_nb.amount = 0;
 }
