@@ -32,6 +32,8 @@ pub struct AudioAssets {
     pub classic: Handle<AudioSource>,
     #[asset(path = "audio/MADNESS.ogg")]
     pub madness: Handle<AudioSource>,
+    #[asset(path = "audio/game over.ogg")]
+    pub game_over: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]
@@ -72,4 +74,6 @@ pub struct TextureAssets {
 
     #[asset(path = "game_over.png")]
     pub game_over: Handle<Image>,
+    #[asset(path = "bill2.png")]
+    pub end_bill: Handle<Image>,
 }

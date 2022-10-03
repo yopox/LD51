@@ -95,7 +95,7 @@ fn init_score(
             .spawn_bundle(SpriteSheetBundle {
                 sprite: Default::default(),
                 texture_atlas: textures.life.clone(),
-                transform: Transform::from_xyz(320. - 54. + 9. * i as f32, 156. - 19., 5.),
+                transform: Transform::from_xyz(320. - 54. + 9. * i as f32, 156. - 12., 5.),
                 ..Default::default()
             })
             .insert(LifeIcon(i))
