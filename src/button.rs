@@ -1,14 +1,18 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy_tweening::TweenCompleted;
 
 use crate::input::Actions;
 use crate::loading::{FontAssets, TextureAssets};
+use crate::tween::EV_ALLOW_BUTTON_UPDATE;
 
 pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(update_buttons);
+        app
+            .add_system(update_buttons)
+            .add_system(allow_button_update);
     }
 }
 
@@ -23,41 +27,61 @@ pub fn spawn_button(
     letter: char,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
-) -> Entity {
-    commands
+    hidden: bool,
+) -> (Entity, Entity) {
+    let child = commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: letter.to_uppercase().to_string(),
+                    style: TextStyle {
+                        font: fonts.axg.clone(),
+                        font_size: 16.0,
+                        color: Color::rgba(58. / 255., 58. / 255., 58. / 255., if hidden { 0. } else { 1. }),
+                        ..Default::default()
+                    },
+                }],
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(4., 13., 1.),
+            ..Default::default()
+        })
+        .id();
+    let button = commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: textures.buttons.clone(),
             sprite: TextureAtlasSprite {
                 anchor: Anchor::BottomLeft,
+                color: Color::rgba(1., 1., 1., if hidden { 0. } else { 1. }),
                 ..Default::default()
             },
             transform: Transform::from_xyz(position.x, position.y, 2.),
             ..Default::default()
         })
-        .with_children(|parent| {
-            parent.spawn_bundle(Text2dBundle {
-                text: Text {
-                    sections: vec![TextSection {
-                        value: letter.to_uppercase().to_string(),
-                        style: TextStyle {
-                            font: fonts.axg.clone(),
-                            font_size: 16.0,
-                            ..Default::default()
-                        },
-                    }],
-                    ..Default::default()
-                },
-                transform: Transform::from_xyz(4., 13., 1.),
-                ..Default::default()
-            });
-        })
+        .add_child(child)
         .insert(Letter { char: letter })
-        .id()
+        .id();
+    (button, child)
+}
+
+#[derive(Component)]
+pub struct PreventButtonUpdate;
+
+fn allow_button_update(
+    mut commands: Commands,
+    mut tween_events: EventReader<TweenCompleted>,
+) {
+    for &TweenCompleted { entity, user_data } in tween_events.iter() {
+        if !user_data == EV_ALLOW_BUTTON_UPDATE { continue; }
+        commands
+            .entity(entity)
+            .remove::<PreventButtonUpdate>();
+    }
 }
 
 fn update_buttons(
     actions: Res<Actions>,
-    mut buttons: Query<(&Letter, &mut TextureAtlasSprite, &Children)>,
+    mut buttons: Query<(&Letter, &mut TextureAtlasSprite, &Children), Without<PreventButtonUpdate>>,
     mut text: Query<&mut Text>,
 ) {
     for (letter, mut sprite, children) in buttons.iter_mut() {
@@ -73,7 +97,9 @@ fn update_buttons(
                 color = Color::rgb(58. / 255., 58. / 255., 58. / 255.);
             }
         }
-        let mut child_text = text.get_mut(*children.get(0).unwrap()).unwrap();
-        child_text.sections.get_mut(0).unwrap().style.color = color;
+        if children.len() > 0 {
+            let mut child_text = text.get_mut(*children.get(0).unwrap()).unwrap();
+            child_text.sections.get_mut(0).unwrap().style.color = color;
+        }
     }
 }

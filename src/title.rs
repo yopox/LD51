@@ -101,7 +101,7 @@ fn setup_title(
         })
         .insert(TitleUi);
 
-    let button_entity = spawn_button(&mut commands, Vec2::new(124., 12.), ' ', &textures, &fonts);
+    let (button_entity, _) = spawn_button(&mut commands, Vec2::new(124., 12.), ' ', &textures, &fonts, false);
     commands
         .entity(button_entity)
         .insert(TitleUi);
@@ -163,7 +163,7 @@ fn handle_input(
 
         for (letter, name, y_pos) in options {
             let y_start = 40.;
-            let button = spawn_button(&mut commands, Vec2::new(160., y_start), letter, &textures, &fonts);
+            let (button, _) = spawn_button(&mut commands, Vec2::new(160., y_start), letter, &textures, &fonts, false);
             commands
                 .entity(button)
                 .insert(TitleUi)

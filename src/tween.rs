@@ -13,6 +13,7 @@ pub const TWEEN_TIME: u64 = 500;
 pub const EV_DELETE: u64 = 0;
 pub const EV_CUSTOMER_WAITING_TIME_ELAPSED: u64 = 1;
 pub const EV_CUSTOMER_EXITED: u64 = 2;
+pub const EV_ALLOW_BUTTON_UPDATE: u64 = 3;
 
 pub struct TweenPlugin;
 
@@ -28,7 +29,7 @@ fn delete_entities(
 ) {
     for TweenCompleted { entity, user_data } in tween_events.iter() {
         if *user_data != EV_DELETE { continue; }
-        commands.entity(*entity).despawn();
+        commands.entity(*entity).despawn_recursive();
     }
 }
 

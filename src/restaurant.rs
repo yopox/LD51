@@ -9,12 +9,12 @@ use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
 
 use crate::{GameState, Labels, tween};
-use crate::button::{Letter, spawn_button};
+use crate::button::{Letter, PreventButtonUpdate, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
-use crate::tween::{tween_text_opacity, TWEEN_TIME};
+use crate::tween::{EV_ALLOW_BUTTON_UPDATE, EV_DELETE, tween_opacity, tween_text_opacity, TWEEN_TIME};
 
 /// Flow of the restaurant:
 /// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
@@ -297,16 +297,33 @@ fn spawn_menu_item(
     timer: bool,
 ) {
     let button_pos = Vec2::new(20., 145. - 16. * item_number as f32);
-    let button = spawn_button(
+    let (button, button_text) = spawn_button(
         &mut commands,
         button_pos,
         ingredient.key(),
         &textures,
         &fonts,
+        true
     );
+
+    let text_appear_animator = |color| Animator::new(
+        Delay::new(Duration::from_millis(if timer { TWEEN_TIME * 2 } else { 0 })).then(
+            tween_text_opacity(color, TWEEN_TIME * 3, true)
+        ));
+
     commands
         .entity(button)
+        .insert(Animator::new(
+            Delay::new(Duration::from_millis(if timer { TWEEN_TIME * 2 } else { 0 })).then(
+                tween_opacity(TWEEN_TIME * 3, true).with_completed_event(EV_ALLOW_BUTTON_UPDATE)
+            ))
+        )
+        .insert(PreventButtonUpdate)
         .insert(CurrentMenuIngredient(item_number));
+
+    commands
+        .entity(button_text)
+        .insert(text_appear_animator(Color::rgb(58. / 255., 58. / 255., 58. / 255.)));
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -324,11 +341,7 @@ fn spawn_menu_item(
             transform: Transform::from_xyz(40., 158. - 16. * item_number as f32, 1.),
             ..Default::default()
         })
-        .insert(Animator::new(
-            Delay::new(Duration::from_millis(if timer { TWEEN_TIME * 2 } else { 0 })).then(
-                tween_text_opacity(Color::WHITE, TWEEN_TIME * 3, true)
-            ))
-        )
+        .insert(text_appear_animator(Color::WHITE))
         .insert(CurrentMenuIngredient(item_number))
         .insert(RestaurantUi);
 }
@@ -339,14 +352,40 @@ fn replace_menu_item(
     mut commands: &mut Commands,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
-    query: &Query<(Entity, &CurrentMenuIngredient)>,
+    mut queries: &mut ParamSet<(
+        Query<(Entity, &CurrentMenuIngredient), With<Text>>,
+        Query<(Entity, &Children, &CurrentMenuIngredient), With<Letter>>
+    )>
 ) {
+    let query = queries.p0();
     for (e, &CurrentMenuIngredient(i)) in query.iter() {
         if item_number == i {
             commands
                 .entity(e)
-                // TODO: Disappear animation
-                .despawn_recursive();
+                .insert(Animator::new(
+                    tween_text_opacity(Color::WHITE, TWEEN_TIME * 2, false)
+                        .with_completed_event(EV_DELETE)
+                ));
+        }
+    }
+
+    let query = queries.p1();
+    for (e, children, &CurrentMenuIngredient(i)) in query.iter() {
+        if item_number == i {
+            commands
+                .entity(e)
+                .insert(Animator::new(
+                    tween_opacity(TWEEN_TIME * 2, false)
+                ));
+
+            if let Some(child) = children.get(0) {
+                commands
+                    .entity(*child)
+                    .insert(Animator::new(
+                        tween_text_opacity(Color::BLACK, TWEEN_TIME * 2, false)
+                            .with_completed_event(EV_DELETE)
+                    ));
+            }
         }
     }
     spawn_menu_item(ingredient, item_number, &mut commands, textures, fonts, true);
@@ -357,7 +396,10 @@ fn show_menu(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
-    ingredients_query: Query<(Entity, &CurrentMenuIngredient)>,
+    mut queries: ParamSet<(
+        Query<(Entity, &CurrentMenuIngredient), With<Text>>,
+        Query<(Entity, &Children, &CurrentMenuIngredient), With<Letter>>
+    )>
 ) {
     for &ShowIngredientEvent { replace, position, ingredient, timer } in ev_show_ingredient.iter() {
         if replace {
@@ -367,7 +409,7 @@ fn show_menu(
                 &mut commands,
                 &textures,
                 &fonts,
-                &ingredients_query
+                &mut queries,
             );
         } else {
             spawn_menu_item(

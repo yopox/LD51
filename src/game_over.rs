@@ -57,12 +57,13 @@ fn init_game_over(
         })
         .insert(GameOverUI);
 
-    let button = spawn_button(
+    let (button, _) = spawn_button(
         &mut commands,
         Vec2::new(154.0, 16.0),
         'm',
         &textures,
         &fonts,
+        false,
     );
     commands.entity(button).insert(GameOverUI);
 }
