@@ -48,9 +48,6 @@ pub struct TextureAssets {
     #[asset(texture_atlas(tile_size_x = 8., tile_size_y = 8., columns = 2, rows = 1, padding_x = 0., padding_y = 0.))]
     #[asset(path = "life.png")]
     pub life: Handle<TextureAtlas>,
-    #[asset(texture_atlas(tile_size_x = 96., tile_size_y = 160., columns = 1, rows = 1, padding_x = 0., padding_y = 0.))]
-    #[asset(path = "robot.png")]
-    pub robot: Handle<TextureAtlas>,
 
     #[asset(path = "background.png")]
     pub background: Handle<Image>,
@@ -63,11 +60,11 @@ pub struct TextureAssets {
 
     #[asset(path = "miam.png")]
     pub miam: Handle<Image>,
-    #[asset(path = "title.png")]
-    pub title: Handle<Image>,
 
     #[asset(path = "bubble.png")]
     pub bubble: Handle<Image>,
     #[asset(path = "arrow.png")]
     pub arrow: Handle<Image>,
+    #[asset(path = "robot.png")]
+    pub robot: Handle<Image>,
 }

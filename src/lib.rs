@@ -1,5 +1,7 @@
 use bevy::app::App;
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 use bevy_kira_audio::AudioPlugin;
 use bevy_tweening::component_animator_system;
 
@@ -68,4 +70,21 @@ impl Plugin for GamePlugin {
             .add_plugin(GameOverPlugin)
             .add_system(component_animator_system::<TextureAtlasSprite>);
     }
+}
+
+pub fn spawn_sprite<'w, 's, 'a>(
+    commands: &'a mut Commands<'w, 's>,
+    handle: Handle<Image>,
+    position: Vec3,
+) -> EntityCommands<'w, 's, 'a> {
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: handle,
+            sprite: Sprite {
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
+            transform: Transform::from_translation(position),
+            ..Default::default()
+        })
 }

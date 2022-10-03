@@ -8,7 +8,7 @@ use bevy_tweening::{Animator, Delay, Sequence};
 use crate::{GameState, Labels};
 use crate::loading::TextureAssets;
 use crate::restaurant::ShowIngredientEvent;
-use crate::tween::{tween_opacity, tween_position, TWEEN_TIME};
+use crate::tween::{tween_position, tween_sprite_opacity, TWEEN_TIME};
 
 pub struct RobotPlugin;
 
@@ -44,10 +44,9 @@ fn init_robot(
     textures: Res<TextureAssets>,
 ) {
     commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: textures.robot.clone(),
-            sprite: TextureAtlasSprite {
-                index: 0,
+        .spawn_bundle(SpriteBundle {
+            texture: textures.robot.clone(),
+            sprite: Sprite {
                 anchor: Anchor::TopRight,
                 color: Color::rgba(1., 1., 1., 0.),
                 ..Default::default()
@@ -77,9 +76,9 @@ fn show_robot(
                     tween_position(writing_pos(position, 4), writing_pos(position, 4) + Vec2::new(-64., 0.), TOP_POS.z, TWEEN_TIME * 2),
                 ])))
                 .insert(Animator::new(
-                    tween_opacity(TWEEN_TIME * 2, true).then(
+                    tween_sprite_opacity(TWEEN_TIME * 2, true).then(
                         Delay::new(Duration::from_millis(WRITING_TIME * 4)).then(
-                            tween_opacity(TWEEN_TIME * 2, false)))
+                            tween_sprite_opacity(TWEEN_TIME * 2, false)))
                 ));
         }
     }

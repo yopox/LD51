@@ -8,7 +8,7 @@ use bevy_tweening::{Animator, Delay};
 use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
 
-use crate::{GameState, Labels, tween};
+use crate::{GameState, Labels, spawn_sprite, tween};
 use crate::button::{Letter, PreventButtonUpdate, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
@@ -83,40 +83,13 @@ fn init_restaurant(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>
 ) {
-    let sprites = [
-        (textures.background.clone(), Vec3::ZERO),
-        (textures.bubble.clone(), Vec3::new(184., 64., 0.5)),
-        (textures.menu.clone(), Vec3::new(8., 8., 0.75)),
-        (textures.counter.clone(), Vec3::new(0., 0., 0.5,)),
-        (textures.plate.clone(), Vec3::new(104., 16., 0.75,)),
-    ];
-
-    for (handle, position) in sprites {
-        commands
-            .spawn_bundle(SpriteBundle {
-                texture: handle,
-                sprite: Sprite {
-                    anchor: Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            })
-            .insert(RestaurantUi);
-    }
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
-                ..Default::default()
-            },
-            transform: Transform::from_xyz(242., 0., 2.),
-            texture: textures.arrow.clone(),
-            ..Default::default()
-        })
-        .insert(Arrow)
-        .insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.bubble.clone(), Vec3::new(184., 64., 0.5)).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.menu.clone(), Vec3::new(8., 8., 0.75)).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5)).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.plate.clone(), Vec3::new(104., 16., 0.75,)).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.arrow.clone(), Vec3::new(242., 0., 2.)).insert(RestaurantUi)
+        .insert(Arrow);
 
     commands
         .spawn_bundle(Text2dBundle {

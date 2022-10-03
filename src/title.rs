@@ -1,15 +1,14 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy::sprite::Anchor;
 use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
 use bevy_tweening::lens::TransformPositionLens;
 
+use crate::{GameState, spawn_sprite};
 use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::spawn_button;
 use crate::cooking::MadnessMode;
-use crate::GameState;
 use crate::input::{Actions, KeyboardReleaseEvent};
 use crate::loading::{FontAssets, TextureAssets};
 use crate::tween::{tween_position, tween_text_opacity, TWEEN_TIME};
@@ -54,51 +53,17 @@ fn setup_title(
     bgm.send(PlayBgmEvent(BGM::TITLE));
     state.burger_open = false;
 
-    let sprites = [
-        (textures.background.clone(), Vec3::ZERO),
-        (textures.counter.clone(), Vec3::new(0., 0., 0.5,)),
-        (textures.plate.clone(), Vec3::new(124., 30., 0.75,)),
-    ];
-
-    for (handle, position) in sprites {
-        commands
-            .spawn_bundle(SpriteBundle {
-                texture: handle,
-                sprite: Sprite {
-                    anchor: Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            })
-            .insert(TitleUi);
-    }
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: textures.title.clone(),
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(TitleUi);
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: textures.miam.clone(),
-            transform: Transform::from_xyz(160., 150., 1.),
-            ..Default::default()
-        })
-        .insert(TitleUi)
+    spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(TitleUi);
+    spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5,)).insert(TitleUi);
+    spawn_sprite(&mut commands, textures.plate.clone(), Vec3::new(124., 30., 0.75,)).insert(TitleUi);
+    spawn_sprite(&mut commands, textures.miam.clone(), Vec3::new(97., 128., 1.)).insert(TitleUi)
         .insert(Animator::new(Tween::new(
             EaseFunction::QuadraticInOut,
             TweeningType::PingPong,
             Duration::from_secs(3),
             TransformPositionLens {
-                start: Vec3::new(160., 150., 1.),
-                end: Vec3::new(160., 140., 1.),
+                start: Vec3::new(97., 128., 1.),
+                end: Vec3::new(97., 118., 1.),
             },
         )));
 
