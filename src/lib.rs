@@ -3,6 +3,7 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_kira_audio::AudioPlugin;
+use bevy_pkv::PkvStore;
 use bevy_tweening::component_animator_system;
 
 use crate::audio::InternalAudioPlugin;
@@ -68,7 +69,8 @@ impl Plugin for GamePlugin {
             .add_plugin(CustomerPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameOverPlugin)
-            .add_system(component_animator_system::<TextureAtlasSprite>);
+            .add_system(component_animator_system::<TextureAtlasSprite>)
+            .insert_resource(PkvStore::new("yopox", "miam"));
     }
 }
 

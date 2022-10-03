@@ -1,15 +1,17 @@
+use std::cmp::max;
 use std::ops::Add;
 use std::time::Duration;
 
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::{Anchor, MaterialMesh2dBundle};
+use bevy_pkv::PkvStore;
 use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
 use crate::{GameState, Labels, tween};
 use crate::audio::{PlaySfxEvent, SFX};
-use crate::cooking::CurrentBurger;
+use crate::cooking::{CurrentBurger, MadnessMode};
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
 use crate::restaurant::ShowOrderEvent;
@@ -173,12 +175,20 @@ fn watch_customer_exited(
     mut state: ResMut<State<GameState>>,
     mut ev_tween_finished: EventReader<TweenCompleted>,
     mut ev_call_new_customer: EventWriter<CallNewCustomer>,
+    madness: Res<MadnessMode>,
+    mut pkv: ResMut<PkvStore>,
 ) {
     for ev in ev_tween_finished.iter() {
         if ev.user_data == EV_CUSTOMER_EXITED {
             if score.lives > 0 {
                 ev_call_new_customer.send(CallNewCustomer);
             } else {
+                let mode = if madness.0 { "madness" } else { "classic" };
+                // Save score
+                let old_score = if let Ok(s) = pkv.get::<String>(mode) {
+                    s.parse::<i64>().unwrap_or(0)
+                } else { 0 };
+                let _ = pkv.set_string(mode, &*max(score.score, old_score).to_string());
                 state.set(GameState::GameOver).unwrap_or_default();
             }
         }

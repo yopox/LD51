@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 
 use crate::{GameState, spawn_sprite};
 use crate::audio::{BGM, PlayBgmEvent};
@@ -28,6 +29,7 @@ fn init_game_over(
     score: Res<Score>,
     mut commands: Commands,
     mut bgm: EventWriter<PlayBgmEvent>,
+    pkv: Res<PkvStore>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
 ) {
@@ -40,11 +42,11 @@ fn init_game_over(
 
     let texts = [
         (format!("YOUR SCORE:"), Vec2::new(108.0, 77.0)),
-        (format!("{}", score.score), Vec2::new(108.0, 77.0 - 8. * 1.)),
+        (score.score.to_string(), Vec2::new(108.0, 77.0 - 8. * 1.)),
         (format!("ALL-TIME BEST: (CLASSIC)"), Vec2::new(108.0, 77.0 - 8. * 3.)),
-        (format!("0"), Vec2::new(108.0, 77.0 - 8. * 4.)),
+        (pkv.get::<String>("classic").unwrap_or("0".to_string()), Vec2::new(108.0, 77.0 - 8. * 4.)),
         (format!("ALL-TIME BEST: (MADNESS)"), Vec2::new(108.0, 77.0 - 8. * 6.)),
-        (format!("0"), Vec2::new(108.0, 77.0 - 8. * 7.)),
+        (pkv.get::<String>("madness").unwrap_or("0".to_string()), Vec2::new(108.0, 77.0 - 8. * 7.)),
     ];
 
     for (text, pos) in texts {
