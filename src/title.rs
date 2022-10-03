@@ -5,6 +5,7 @@ use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, EaseFunction, Tween, TweeningType};
 use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
 
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::spawn_button;
 use crate::GameState;
 use crate::input::{Actions, KeyboardReleaseEvent};
@@ -42,10 +43,12 @@ impl Plugin for TitlePlugin {
 
 fn setup_title(
     mut commands: Commands,
+    mut bgm: EventWriter<PlayBgmEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     mut state: ResMut<TitleState>,
 ) {
+    bgm.send(PlayBgmEvent(BGM::TITLE));
     state.burger_open = false;
 
     commands

@@ -9,6 +9,7 @@ use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
 
 use crate::{GameState, Labels, tween};
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::{Letter, spawn_button};
 use crate::cooking::CurrentBurger;
 use crate::ingredients::{Ingredient, Menu};
@@ -81,9 +82,12 @@ struct RestaurantUi;
 
 fn init_restaurant(
     mut commands: Commands,
+    mut bgm: EventWriter<PlayBgmEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>
 ) {
+    bgm.send(PlayBgmEvent(BGM::CLASSIC));
+
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.restaurant.clone(),

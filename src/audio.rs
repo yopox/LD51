@@ -1,52 +1,73 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 
-use crate::GameState;
+use crate::loading::AudioAssets;
 
 pub struct InternalAudioPlugin;
 
 impl Plugin for InternalAudioPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(AudioPlugin)
-            // .add_system_set(SystemSet::on_enter(GameState::Cooking).with_system(start_audio))
-            .add_system_set(
-                SystemSet::on_update(GameState::Cooking)
-                    // .with_system(control_flying_sound)
-                ,
-            );
+        app
+            .add_plugin(AudioPlugin)
+            .add_startup_system(init_bgm)
+            .add_system(update_bgm)
+            .add_event::<PlayBgmEvent>();
     }
 }
 
-// struct FlyingAudio(Handle<AudioInstance>);
+#[derive(Copy, Clone)]
+pub enum BGM {
+    TITLE,
+    CLASSIC,
+    MADNESS,
+}
 
-// fn start_audio(mut commands: Commands, audio_assets: Res<AudioAssets>, audio: Res<Audio>) {
-//     audio.pause();
-//     let handle = audio
-//         .play(audio_assets.flying.clone())
-//         .looped()
-//         .with_volume(0.3)
-//         .handle();
-//     commands.insert_resource(FlyingAudio(handle));
-// }
+impl BGM {
+    fn get_handle(&self, audio_assets: Res<AudioAssets>) -> Handle<AudioSource> {
+        match self {
+            BGM::TITLE => audio_assets.title.clone(),
+            BGM::CLASSIC => audio_assets.classic.clone(),
+            BGM::MADNESS => audio_assets.madness.clone(),
+        }
+    }
+}
 
-// fn control_flying_sound(
-//     actions: Res<Actions>,
-//     audio: Res<FlyingAudio>,
-//     mut audio_instances: ResMut<Assets<AudioInstance>>,
-// ) {
-//     if let Some(instance) = audio_instances.get_mut(&audio.0) {
-//         match instance.state() {
-//             PlaybackState::Paused { .. } => {
-//                 if actions.player_movement.is_some() {
-//                     instance.resume(AudioTween::default());
-//                 }
-//             }
-//             PlaybackState::Playing { .. } => {
-//                 if actions.player_movement.is_none() {
-//                     instance.pause(AudioTween::default());
-//                 }
-//             }
-//             _ => {}
-//         }
-//     }
-// }
+pub struct PlayBgmEvent(pub BGM);
+
+#[derive(Component)]
+pub struct MusicVolume {
+    pub volume: f64,
+}
+
+fn init_bgm(
+    mut commands: Commands,
+) {
+    commands
+        .spawn()
+        .insert(MusicVolume { volume: 0.6 });
+}
+
+fn update_bgm(
+    mut bgm_events: EventReader<PlayBgmEvent>,
+    mut volume: Query<(Entity, &mut MusicVolume)>,
+    audio_assets: Option<Res<AudioAssets>>,
+    audio: Res<Audio>,
+) {
+    if audio_assets.is_none() { return; }
+
+    for (e, mut v) in volume.iter() {
+        // Update volume
+        audio.set_volume(v.volume);
+
+        // Play BGMs
+        for PlayBgmEvent(bgm) in bgm_events.iter() {
+            audio.stop();
+            audio
+                .play(bgm.get_handle(audio_assets.unwrap()))
+                .looped();
+            break;
+        }
+        bgm_events.clear();
+        return;
+    }
+}

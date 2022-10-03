@@ -1,5 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::*;
+use bevy_kira_audio::AudioPlugin;
 use bevy_tweening::component_animator_system;
 
 use crate::audio::InternalAudioPlugin;
@@ -50,6 +51,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_state(GameState::Loading)
             .add_plugin(LoadingPlugin)
+            .add_plugin(AudioPlugin)
             .add_plugin(TitlePlugin)
             .add_plugin(InputPlugin)
             .add_plugin(InternalAudioPlugin)

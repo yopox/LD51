@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_kira_audio::AudioSource;
 
 use crate::GameState;
 
@@ -25,8 +26,12 @@ pub struct FontAssets {
 
 #[derive(AssetCollection)]
 pub struct AudioAssets {
-    // #[asset(path = "audio/flying.ogg")]
-    // pub flying: Handle<AudioSource>,
+    #[asset(path = "audio/TITLE.ogg")]
+    pub title: Handle<AudioSource>,
+    #[asset(path = "audio/JEU.ogg")]
+    pub classic: Handle<AudioSource>,
+    #[asset(path = "audio/MADNESS.ogg")]
+    pub madness: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]
