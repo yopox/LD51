@@ -64,10 +64,11 @@ impl Plugin for RestaurantPlugin {
 
 pub struct ShowOrderEvent;
 
-struct ShowIngredientEvent {
-    replace: bool,
-    position: usize,
-    ingredient: Ingredient,
+pub struct ShowIngredientEvent {
+    pub replace: bool,
+    pub position: usize,
+    pub ingredient: Ingredient,
+    pub timer: bool,
 }
 
 #[derive(Component)]
@@ -218,7 +219,10 @@ fn update_arrow(
 #[derive(Component)]
 struct AddIngredientTimer(pub Timer);
 
-pub struct AddIngredientEvent(pub Ingredient);
+pub struct AddIngredientEvent {
+    pub ingredient: Ingredient,
+    pub timer: bool,
+}
 
 pub static MENU_SIZE: usize = 8;
 
@@ -237,7 +241,10 @@ fn add_ingredient_watcher(
             .iter().filter(|&i| !menu_on_display.ingredients.contains(i))
             .collect();
         ingredients_not_in_menu.shuffle(&mut thread_rng());
-        ev_add_ingredient.send(AddIngredientEvent(**ingredients_not_in_menu.first().unwrap()));
+        ev_add_ingredient.send(AddIngredientEvent {
+            ingredient: **ingredients_not_in_menu.first().unwrap(),
+            timer: true
+        });
     }
 }
 
@@ -246,7 +253,7 @@ fn add_ingredient_to_menu(
     mut ev_add_ingredient: EventReader<AddIngredientEvent>,
     mut ev_show_ingredient: EventWriter<ShowIngredientEvent>,
 ) {
-    for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
+    for &AddIngredientEvent { ingredient, timer } in ev_add_ingredient.iter() {
         menu.ingredients_seen.insert(ingredient);
         if menu.ingredients.len() <= MENU_SIZE {
             // Add a new item at the end of the menu
@@ -254,7 +261,8 @@ fn add_ingredient_to_menu(
             ev_show_ingredient.send(ShowIngredientEvent {
                 replace: false,
                 position: menu.ingredients.iter().position(|&i| i == ingredient).unwrap(),
-                ingredient
+                ingredient,
+                timer
             });
         } else {
             // Replace a menu item
@@ -269,7 +277,8 @@ fn add_ingredient_to_menu(
             ev_show_ingredient.send(ShowIngredientEvent {
                 replace: true,
                 position: to_replace,
-                ingredient
+                ingredient,
+                timer
             })
         }
     }
@@ -340,7 +349,7 @@ fn show_menu(
     fonts: Res<FontAssets>,
     ingredients_query: Query<(Entity, &CurrentMenuIngredient)>,
 ) {
-    for &ShowIngredientEvent { replace, position, ingredient } in ev_show_ingredient.iter() {
+    for &ShowIngredientEvent { replace, position, ingredient, timer } in ev_show_ingredient.iter() {
         if replace {
             replace_menu_item(
                 ingredient,

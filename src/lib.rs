@@ -12,6 +12,7 @@ use crate::input::InputPlugin;
 use crate::loading::LoadingPlugin;
 use crate::order::OrderPlugin;
 use crate::restaurant::RestaurantPlugin;
+use crate::robot::RobotPlugin;
 use crate::score::ScorePlugin;
 use crate::title::TitlePlugin;
 use crate::tween::TweenPlugin;
@@ -29,6 +30,7 @@ mod score;
 mod game_over;
 mod customer;
 mod tween;
+mod robot;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -60,6 +62,7 @@ impl Plugin for GamePlugin {
             .add_plugin(OrderPlugin)
             .add_plugin(CookingPlugin)
             .add_plugin(RestaurantPlugin)
+            .add_plugin(RobotPlugin)
             .add_plugin(CustomerPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameOverPlugin)

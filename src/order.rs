@@ -61,7 +61,10 @@ fn init_menu(
     menu_on_display.ingredients.clear();
     menu_on_display.ingredients_seen.clear();
     for i in menu.basic_ingredients(madness_mode.0) {
-        ev_add_ingredient.send(AddIngredientEvent(i));
+        ev_add_ingredient.send(AddIngredientEvent {
+            ingredient: i,
+            timer: false
+        });
     }
 }
 
