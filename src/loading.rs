@@ -13,7 +13,7 @@ impl Plugin for LoadingPlugin {
                 .with_collection::<FontAssets>()
                 .with_collection::<AudioAssets>()
                 .with_collection::<TextureAssets>()
-                .continue_to_state(GameState::GameOver),
+                .continue_to_state(GameState::TitleScreen),
         );
     }
 }
@@ -57,6 +57,8 @@ pub struct TextureAssets {
     pub plate: Handle<Image>,
     #[asset(path = "menu.png")]
     pub menu: Handle<Image>,
+    #[asset(path = "bill.png")]
+    pub bill: Handle<Image>,
 
     #[asset(path = "miam.png")]
     pub miam: Handle<Image>,

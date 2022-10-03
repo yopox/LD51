@@ -88,6 +88,7 @@ fn init_restaurant(
     spawn_sprite(&mut commands, textures.menu.clone(), Vec3::new(8., 8., 0.75)).insert(RestaurantUi);
     spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5)).insert(RestaurantUi);
     spawn_sprite(&mut commands, textures.plate.clone(), Vec3::new(104., 16., 0.75,)).insert(RestaurantUi);
+    spawn_sprite(&mut commands, textures.bill.clone(), Vec3::new(320. - 64., 180. - 64., 3.,)).insert(RestaurantUi);
     spawn_sprite(&mut commands, textures.arrow.clone(), Vec3::new(242., 0., 2.)).insert(RestaurantUi)
         .insert(Arrow);
 

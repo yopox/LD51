@@ -50,7 +50,7 @@ impl Score {
     }
 
     fn to_display_text(&self) -> String {
-        format!("Score: {}", self.score)
+        format!("{}", self.score)
     }
 }
 
@@ -79,13 +79,13 @@ fn init_score(
                     style: TextStyle {
                         font: fonts.axg.clone(),
                         font_size: 16.0,
-                        color: Color::WHITE,
+                        color: Color::BLACK,
                     },
                 }],
-                alignment: TextAlignment::BOTTOM_RIGHT,
+                alignment: TextAlignment::BOTTOM_LEFT,
                 ..Default::default()
             },
-            transform: Transform::from_xyz(304., 162., 1.),
+            transform: Transform::from_xyz(320. - 56., 156., 5.),
             ..Default::default()
         })
         .insert(ScoreUI);
@@ -95,7 +95,7 @@ fn init_score(
             .spawn_bundle(SpriteSheetBundle {
                 sprite: Default::default(),
                 texture_atlas: textures.life.clone(),
-                transform: Transform::from_xyz(248. + 12. * i as f32, 24., 3.),
+                transform: Transform::from_xyz(320. - 54. + 9. * i as f32, 156. - 19., 5.),
                 ..Default::default()
             })
             .insert(LifeIcon(i))

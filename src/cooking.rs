@@ -4,8 +4,7 @@ use std::time::Duration;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy_tweening::{Animator, Delay, EaseFunction, Sequence, Tween, TweeningType};
-use bevy_tweening::lens::{TextColorLens, TransformPositionLens};
+use bevy_tweening::{Animator, Delay, Sequence};
 
 use crate::{GameState, Labels, tween};
 use crate::audio::{BGM, PlayBgmEvent};
@@ -15,6 +14,7 @@ use crate::input::KeyboardEvent;
 use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 use crate::score::Score;
+use crate::tween::{tween_position, tween_text_opacity};
 
 pub struct CookingPlugin;
 
@@ -275,7 +275,7 @@ fn display_streak_or_miss(
             "MISS".to_string()
         };
 
-        let starting_position = Vec3::new(140., 44. + 8. * nb_ingredients as f32, 1.);
+        let starting_position = Vec3::new(140., 32. + 8. * nb_ingredients as f32, 1.);
 
         commands
             .spawn_bundle(Text2dBundle {
@@ -284,8 +284,8 @@ fn display_streak_or_miss(
                         value: text,
                         style: TextStyle {
                             font: fonts.axg.clone(),
-                            font_size: 16.0,
-                            color: Color::rgba(0., 0., 0., 0.),
+                            font_size: 24.0,
+                            color: Color::rgba(1., 1., 1., 0.),
                         },
                     }],
                     alignment: TextAlignment::CENTER,
@@ -294,25 +294,12 @@ fn display_streak_or_miss(
                 ..Default::default()
             })
             .insert(CookingUI)
-            .insert(Animator::new(Tween::new(
-                EaseFunction::CubicOut,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                TextColorLens {
-                    start: Color::rgba(0., 0., 0., 1.),
-                    end: Color::rgba(0., 0., 0., 0.),
-                    section: 0,
-                },
-            )))
-            .insert(Animator::new(Tween::new(
-                EaseFunction::CubicOut,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                TransformPositionLens {
-                    start: starting_position,
-                    end: starting_position + Vec3::new(0., 12., 0.),
-                },
-            )));
+            .insert(Animator::new(
+                tween_text_opacity(Color::WHITE, 1500, false)
+            ))
+            .insert(Animator::new(
+                tween_position(starting_position.xy(), starting_position.xy() + Vec2::new(0., 12.), 10., 1500)
+            ));
     }
 }
 
