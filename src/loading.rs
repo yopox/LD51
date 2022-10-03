@@ -80,6 +80,8 @@ pub struct TextureAssets {
     pub plate: Handle<Image>,
     #[asset(path = "menu.png")]
     pub menu: Handle<Image>,
+    #[asset(path = "heart.png")]
+    pub heart: Handle<Image>,
     #[asset(path = "bill.png")]
     pub bill: Handle<Image>,
 

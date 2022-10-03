@@ -9,7 +9,7 @@ use bevy_pkv::PkvStore;
 use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweenCompleted, TweeningType};
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
-use crate::{GameState, Labels, tween};
+use crate::{GameState, Labels, spawn_sprite, tween};
 use crate::audio::{PlaySfxEvent, SFX};
 use crate::cooking::{CurrentBurger, MadnessMode};
 use crate::loading::TextureAssets;
@@ -54,6 +54,7 @@ fn create_customer_waiting_bars(
     mut ev_show_order: EventReader<ShowOrderEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    textures: Res<TextureAssets>,
 ) {
     // Create customer timers
     for _ in ev_show_order.iter() {
@@ -61,15 +62,19 @@ fn create_customer_waiting_bars(
             EXTRA_TIME_PER_BURGER + order.ingredients.len() as f64 * TIME_PER_INGREDIENT,
         );
 
-        let start_position = Vec3::new(260., 112., 2.);
-        let x_size = 50.;
+        let start_position = Vec3::new(260. + 24., 109., 2.);
+        let x_size = 48.;
+
+        spawn_sprite(&mut commands, textures.heart.clone(), Vec3::new(start_position.x - 28., start_position.y - 3., 3.))
+            .insert(CustomerTimer)
+            .insert(CustomerUI);
 
         commands
             .spawn_bundle(MaterialMesh2dBundle {
                 mesh: meshes
-                    .add(shape::Quad::new(Vec2::new(1., 1.)).into())
+                    .add(shape::Quad::new(Vec2::new(1., 4.)).into())
                     .into(),
-                material: materials.add(ColorMaterial::from(Color::BLACK)),
+                material: materials.add(ColorMaterial::from(Color::WHITE)),
                 transform: Transform::from_translation(start_position),
                 ..default()
             })
@@ -81,8 +86,8 @@ fn create_customer_waiting_bars(
                     TweeningType::Once,
                     duration,
                     TransformScaleLens {
-                        start: Vec3::new(1., 1., 1.),
-                        end: Vec3::new(x_size, 1., 1.),
+                        start: Vec3::new(x_size, 1., 1.),
+                        end: Vec3::new(1., 1., 1.),
                     },
                 ),
                 Tween::new(
@@ -91,7 +96,7 @@ fn create_customer_waiting_bars(
                     duration,
                     TransformPositionLens {
                         start: start_position,
-                        end: start_position + Vec3::new(x_size / 2., 1., 1.),
+                        end: start_position + Vec3::new(x_size / -2., 0., 0.),
                     },
                 )
                 .with_completed_event(EV_CUSTOMER_WAITING_TIME_ELAPSED),
