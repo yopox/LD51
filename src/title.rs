@@ -54,6 +54,26 @@ fn setup_title(
     bgm.send(PlayBgmEvent(BGM::TITLE));
     state.burger_open = false;
 
+    let sprites = [
+        (textures.background.clone(), Vec3::ZERO),
+        (textures.counter.clone(), Vec3::new(0., 0., 0.5,)),
+        (textures.plate.clone(), Vec3::new(124., 30., 0.75,)),
+    ];
+
+    for (handle, position) in sprites {
+        commands
+            .spawn_bundle(SpriteBundle {
+                texture: handle,
+                sprite: Sprite {
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(position),
+                ..Default::default()
+            })
+            .insert(TitleUi);
+    }
+
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.title.clone(),

@@ -83,28 +83,27 @@ fn init_restaurant(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>
 ) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: textures.restaurant.clone(),
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RestaurantUi);
+    let sprites = [
+        (textures.background.clone(), Vec3::ZERO),
+        (textures.bubble.clone(), Vec3::new(184., 64., 0.5)),
+        (textures.menu.clone(), Vec3::new(8., 8., 0.75)),
+        (textures.counter.clone(), Vec3::new(0., 0., 0.5,)),
+        (textures.plate.clone(), Vec3::new(104., 16., 0.75,)),
+    ];
 
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: textures.bubble.clone(),
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
+    for (handle, position) in sprites {
+        commands
+            .spawn_bundle(SpriteBundle {
+                texture: handle,
+                sprite: Sprite {
+                    anchor: Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(position),
                 ..Default::default()
-            },
-            transform: Transform::from_xyz(184., 64., 1.),
-            ..Default::default()
-        })
-        .insert(RestaurantUi);
+            })
+            .insert(RestaurantUi);
+    }
 
     commands
         .spawn_bundle(SpriteBundle {

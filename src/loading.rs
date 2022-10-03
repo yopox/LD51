@@ -52,13 +52,20 @@ pub struct TextureAssets {
     #[asset(path = "robot.png")]
     pub robot: Handle<TextureAtlas>,
 
+    #[asset(path = "background.png")]
+    pub background: Handle<Image>,
+    #[asset(path = "counter.png")]
+    pub counter: Handle<Image>,
+    #[asset(path = "plate.png")]
+    pub plate: Handle<Image>,
+    #[asset(path = "menu.png")]
+    pub menu: Handle<Image>,
+
     #[asset(path = "miam.png")]
     pub miam: Handle<Image>,
     #[asset(path = "title.png")]
     pub title: Handle<Image>,
 
-    #[asset(path = "restaurant.png")]
-    pub restaurant: Handle<Image>,
     #[asset(path = "bubble.png")]
     pub bubble: Handle<Image>,
     #[asset(path = "arrow.png")]
