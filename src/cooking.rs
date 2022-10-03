@@ -182,10 +182,11 @@ fn send_order(
                 commands.insert_resource(ExpectingOrder(false));
                 let correct = current_burger.ingredients == order.ingredients;
                 ev_sfx.send(PlaySfxEvent(if correct { SFX::CorrectOrder } else { SFX::IncorrectOrder }));
-                ev_send_burger.send(BurgerFinishedEvent(
+                ev_send_burger.send(BurgerFinishedEvent {
                     correct,
-                    current_burger.ingredients.len(),
-                ));
+                    size: current_burger.ingredients.len(),
+                    out_of_time: false
+                });
             } else {
                 // TODO: Visual error "can't send an empty order"
             }
@@ -199,7 +200,7 @@ fn animate_burger(
     mut current_burger: ResMut<CurrentBurger>,
     ingredients: Query<(Entity, &Transform), With<CurrentBurgerIngredient>>,
 ) {
-    for BurgerFinishedEvent(success, _) in ev_burger_finished.iter() {
+    for BurgerFinishedEvent { correct, size, out_of_time } in ev_burger_finished.iter() {
         for (entity, transform) in ingredients.iter() {
             let ingredient_position = transform.translation.xy();
             commands
@@ -210,7 +211,7 @@ fn animate_burger(
                             .with_completed_event(tween::EV_DELETE),
                     ),
                 ))
-                .insert(Animator::new(match success {
+                .insert(Animator::new(match correct {
                     true => win_sequence(ingredient_position, transform.translation.z),
                     false => lose_sequence(ingredient_position, transform.translation.z),
                 }))
@@ -272,18 +273,22 @@ fn display_streak_or_miss(
     fonts: Res<FontAssets>,
     mut commands: Commands,
 ) {
-    for &BurgerFinishedEvent(correct, nb_ingredients) in ev_send_burger.iter() {
+    for &BurgerFinishedEvent { correct, size, out_of_time } in ev_send_burger.iter() {
         let text = if correct {
             if score.streak > 1 {
-                format!("{} CHAIN", score.streak)
+                format!("{} CHAIN!", score.streak)
             } else {
                 continue;
             }
         } else {
-            "MISS".to_string()
+            if out_of_time {
+                "OUT OF TIME!".to_string()
+            } else {
+                "MISS!".to_string()
+            }
         };
 
-        let starting_position = Vec3::new(140., 32. + 8. * nb_ingredients as f32, 1.);
+        let starting_position = Vec3::new(140., 32. + 8. * size as f32, 1.);
 
         commands
             .spawn_bundle(Text2dBundle {

@@ -25,9 +25,11 @@ pub struct MenuOnDisplay {
 pub struct OrderPlugin;
 
 /// Event sent when the player has finished a burger
-/// the bool indicates if the burger satisfies the customer demands
-/// The int indicates how many ingredients were inside the burger
-pub struct BurgerFinishedEvent(pub bool, pub usize);
+pub struct BurgerFinishedEvent {
+    pub correct: bool,
+    pub size: usize,
+    pub out_of_time: bool,
+}
 
 impl Plugin for OrderPlugin {
     fn build(&self, app: &mut App) {
@@ -96,10 +98,10 @@ fn receive_burger(
     mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
     mut life_icons: Query<(&LifeIcon, &mut TextureAtlasSprite)>,
 ) {
-    for &BurgerFinishedEvent(correct, difficulty) in ev_burger_sent.iter() {
+    for &BurgerFinishedEvent { correct, size, out_of_time } in ev_burger_sent.iter() {
         if correct {
             let duration = time.time_since_startup() - order.creation_time;
-            score.compute_on_success(duration.as_secs_f64(), difficulty);
+            score.compute_on_success(duration.as_secs_f64(), size);
         } else {
             score.compute_on_failure();
             // Update life icons

@@ -8,6 +8,7 @@ use bevy_tweening::{Animator, EaseMethod, Tracks, Tween, TweenCompleted, Tweenin
 use bevy_tweening::lens::{TransformPositionLens, TransformScaleLens};
 
 use crate::{GameState, Labels, tween};
+use crate::audio::{PlaySfxEvent, SFX};
 use crate::cooking::CurrentBurger;
 use crate::loading::TextureAssets;
 use crate::order::{BurgerFinishedEvent, Order};
@@ -142,7 +143,7 @@ fn customer_exit(
     customer: Query<Entity, With<CurrentCustomer>>,
     timer_query: Query<Entity, With<CustomerTimer>>,
 ) {
-    for BurgerFinishedEvent(_, _) in ev_burger.iter() {
+    for _burger_finished_event in ev_burger.iter() {
         if let Ok(current_customer) = customer.get_single() {
             let customer_pos = customer_pos();
             commands
@@ -188,10 +189,16 @@ fn watch_customer_waiting_time(
     current_burger: Res<CurrentBurger>,
     mut ev_tween_finished: EventReader<TweenCompleted>,
     mut ev_burger_completed: EventWriter<BurgerFinishedEvent>,
+    mut sfx: EventWriter<PlaySfxEvent>,
 ) {
     for ev in ev_tween_finished.iter() {
         if ev.user_data == EV_CUSTOMER_WAITING_TIME_ELAPSED {
-            ev_burger_completed.send(BurgerFinishedEvent(false, current_burger.ingredients.len()))
+            sfx.send(PlaySfxEvent(SFX::IncorrectOrder));
+            ev_burger_completed.send(BurgerFinishedEvent {
+                correct: false,
+                size: current_burger.ingredients.len(),
+                out_of_time: true,
+            })
         }
     }
 }
