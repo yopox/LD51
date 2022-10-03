@@ -86,7 +86,6 @@ fn add_ingredient(
     for KeyboardEvent(key) in input.iter() {
         if let Some(ingredient) = Ingredient::from_key(&key) {
             // Check that the ingredient has been in the menu
-            println!("Seen: {}", menu.ingredients_seen.iter().map(|i| i.name()).collect::<Vec<String>>().join(";"));
             if !menu.ingredients_seen.contains(&ingredient) {
                 continue;
             }

@@ -251,7 +251,6 @@ fn add_ingredient_to_menu(
         if menu.ingredients.len() <= MENU_SIZE {
             // Add a new item at the end of the menu
             menu.ingredients.push(ingredient);
-            println!("Menu: {}", menu.ingredients.iter().map(|i| i.name()).collect::<Vec<String>>().join(";"));
             ev_show_ingredient.send(ShowIngredientEvent {
                 replace: false,
                 position: menu.ingredients.iter().position(|&i| i == ingredient).unwrap(),

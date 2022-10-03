@@ -155,6 +155,13 @@ impl Menu {
             Menu::Uno => {
                 let mut rng = thread_rng();
 
+                // Choose a meat for the burger
+                let meat = if ingredients.contains(&Ingredient::Chicken) && ingredients.contains(&Ingredient::Steak) {
+                    if random() { Ingredient::Chicken } else { Ingredient::Steak }
+                } else {
+                    *ingredients.iter().find(|i| i.is_meat()).unwrap()
+                };
+
                 // random_ingredients are the ingredients that will be chosen at random
                 let mut random_ingredients: Vec<Ingredient> = ingredients
                     .into_iter()
@@ -175,13 +182,6 @@ impl Menu {
                 let possible_mayo = ingredients.contains(&Ingredient::Mayo);
                 let is_there_sauce = random() && (possible_ketchup || possible_mayo);
                 let nb_sauces = if is_there_sauce { 1 } else { 0 };
-
-                // Choose a meat for the burger
-                let meat = if ingredients.contains(&Ingredient::Chicken) && ingredients.contains(&Ingredient::Steak) {
-                    if random() { Ingredient::Chicken } else { Ingredient::Steak }
-                } else {
-                    *ingredients.iter().find(|i| i.is_meat()).unwrap()
-                };
 
                 // Double every ingredient
                 let ri: Vec<Ingredient> = random_ingredients.iter().copied().collect();
