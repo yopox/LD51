@@ -32,6 +32,8 @@ pub struct AudioAssets {
     pub classic: Handle<AudioSource>,
     #[asset(path = "audio/MADNESS.ogg")]
     pub madness: Handle<AudioSource>,
+    #[asset(path = "audio/game over.ogg")]
+    pub game_over: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]

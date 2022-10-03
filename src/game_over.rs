@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{GameState, spawn_sprite};
+use crate::audio::{BGM, PlayBgmEvent};
 use crate::button::spawn_button;
 use crate::input::{KeyboardReleaseEvent, process_input};
 use crate::loading::{FontAssets, TextureAssets};
@@ -26,9 +27,12 @@ impl Plugin for GameOverPlugin {
 fn init_game_over(
     score: Res<Score>,
     mut commands: Commands,
+    mut bgm: EventWriter<PlayBgmEvent>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
 ) {
+    bgm.send(PlayBgmEvent(BGM::GAME_OVER));
+
     spawn_sprite(&mut commands, textures.background.clone(), Vec3::ZERO.clone()).insert(GameOverUi);
     spawn_sprite(&mut commands, textures.counter.clone(), Vec3::new(0., 0., 0.5)).insert(GameOverUi);
     spawn_sprite(&mut commands, textures.game_over.clone(), Vec3::new(160. - 136., 136. - 23., 1.)).insert(GameOverUi);

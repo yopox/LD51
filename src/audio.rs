@@ -19,6 +19,7 @@ pub enum BGM {
     TITLE,
     CLASSIC,
     MADNESS,
+    GAME_OVER,
 }
 
 impl BGM {
@@ -27,6 +28,7 @@ impl BGM {
             BGM::TITLE => audio_assets.title.clone(),
             BGM::CLASSIC => audio_assets.classic.clone(),
             BGM::MADNESS => audio_assets.madness.clone(),
+            BGM::GAME_OVER => audio_assets.game_over.clone(),
         }
     }
 }
