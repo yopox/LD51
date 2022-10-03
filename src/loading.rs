@@ -65,8 +65,8 @@ pub struct TextureAssets {
     pub bubble: Handle<Image>,
     #[asset(path = "arrow.png")]
     pub arrow: Handle<Image>,
-    #[asset(path = "robot.png")]
-    pub robot: Handle<Image>,
+    #[asset(path = "chef.png")]
+    pub chef: Handle<Image>,
 
     #[asset(path = "game_over.png")]
     pub game_over: Handle<Image>,

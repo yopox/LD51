@@ -7,6 +7,7 @@ use bevy_tweening::component_animator_system;
 
 use crate::audio::InternalAudioPlugin;
 use crate::button::ButtonPlugin;
+use crate::chef::ChefPlugin;
 use crate::cooking::CookingPlugin;
 use crate::customer::CustomerPlugin;
 use crate::game_over::GameOverPlugin;
@@ -14,7 +15,6 @@ use crate::input::InputPlugin;
 use crate::loading::LoadingPlugin;
 use crate::order::OrderPlugin;
 use crate::restaurant::RestaurantPlugin;
-use crate::robot::RobotPlugin;
 use crate::score::ScorePlugin;
 use crate::title::TitlePlugin;
 use crate::tween::TweenPlugin;
@@ -32,7 +32,7 @@ mod score;
 mod game_over;
 mod customer;
 mod tween;
-mod robot;
+mod chef;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -64,7 +64,7 @@ impl Plugin for GamePlugin {
             .add_plugin(OrderPlugin)
             .add_plugin(CookingPlugin)
             .add_plugin(RestaurantPlugin)
-            .add_plugin(RobotPlugin)
+            .add_plugin(ChefPlugin)
             .add_plugin(CustomerPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameOverPlugin)

@@ -10,42 +10,42 @@ use crate::loading::TextureAssets;
 use crate::restaurant::ShowIngredientEvent;
 use crate::tween::{tween_position, tween_sprite_opacity, TWEEN_TIME};
 
-pub struct RobotPlugin;
+pub struct ChefPlugin;
 
-impl Plugin for RobotPlugin {
+impl Plugin for ChefPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(
                 SystemSet::on_enter(GameState::Cooking)
                     .label(Labels::UI)
-                    .with_system(init_robot)
+                    .with_system(init_chef)
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Cooking)
                     .label(Labels::UI)
-                    .with_system(show_robot)
+                    .with_system(show_chef)
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Cooking)
                     .label(Labels::UI)
-                    .with_system(clean_robot)
+                    .with_system(clean_chef)
             );
     }
 }
 
 #[derive(Component)]
-struct RobotUI;
+struct ChefUI;
 
 const TOP_POS: Vec3 = Vec3::new(54., 148., 10.);
 const WRITING_TIME: u64 = 160;
 
-fn init_robot(
+fn init_chef(
     mut commands: Commands,
     textures: Res<TextureAssets>,
 ) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: textures.robot.clone(),
+            texture: textures.chef.clone(),
             sprite: Sprite {
                 anchor: Anchor::TopRight,
                 color: Color::rgba(1., 1., 1., 0.),
@@ -54,15 +54,15 @@ fn init_robot(
             transform: Transform::from_translation(TOP_POS),
             ..Default::default()
         })
-        .insert(RobotUI);
+        .insert(ChefUI);
 }
 
-fn show_robot(
+fn show_chef(
     mut commands: Commands,
     mut ev_show_ingredient: EventReader<ShowIngredientEvent>,
-    robot: Query<Entity, With<RobotUI>>,
+    chef: Query<Entity, With<ChefUI>>,
 ) {
-    if let entity = robot.single() {
+    if let entity = chef.single() {
         for &ShowIngredientEvent { replace, position, ingredient, timer } in ev_show_ingredient.iter() {
             if !timer { continue; }
             commands
@@ -91,9 +91,9 @@ fn writing_pos(
     return TOP_POS.xy() + Vec2::new(8. * step as f32, if step % 2 == 0 { 0. } else { 6. } - 16. * ingredient as f32);
 }
 
-fn clean_robot(
+fn clean_chef(
     mut commands: Commands,
-    entities: Query<Entity, With<RobotUI>>,
+    entities: Query<Entity, With<ChefUI>>,
 ) {
     for entity in entities.iter() {
         commands.entity(entity).despawn_recursive();
