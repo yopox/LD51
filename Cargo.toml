@@ -27,6 +27,7 @@ bevy_kira_audio = { version = "0.12" }
 bevy_asset_loader = { version = "0.12", default-features = false, features = ["2d"] }
 bevy_tweening = { version = "0.5.0" }
 rand = { version = "0.8.3", features = ["alloc"]}
+bevy_pkv = { version = "0.5.0" }
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.26.0", default-features = false }
