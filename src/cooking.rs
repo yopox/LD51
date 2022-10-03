@@ -298,7 +298,7 @@ fn display_streak_or_miss(
             }
         };
 
-        let starting_position = Vec3::new(140., 32. + 8. * size as f32, 1.);
+        let starting_position = Vec3::new(140., 40. + 8. * size as f32, 1.);
 
         commands
             .spawn_bundle(Text2dBundle {
