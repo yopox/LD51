@@ -68,6 +68,7 @@ fn setup_title(
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.miam.clone(),
+            transform: Transform::from_xyz(160., 150., 1.),
             ..Default::default()
         })
         .insert(TitleUi)
