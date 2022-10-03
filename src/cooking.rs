@@ -5,6 +5,7 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, Delay, Sequence};
+use rand::random;
 
 use crate::{GameState, Labels, tween};
 use crate::audio::{BGM, PlayBgmEvent, PlaySfxEvent, SFX};
@@ -181,7 +182,16 @@ fn send_order(
             if current_burger.ingredients.len() > 0 {
                 commands.insert_resource(ExpectingOrder(false));
                 let correct = current_burger.ingredients == order.ingredients;
-                ev_sfx.send(PlaySfxEvent(if correct { SFX::CorrectOrder } else { SFX::IncorrectOrder }));
+                match correct {
+                    true => {
+                        ev_sfx.send(PlaySfxEvent(SFX::CorrectOrder));
+                        if random::<f32>() < 0.3 { ev_sfx.send(PlaySfxEvent(SFX::CustomerHappy)); }
+                    }
+                    false => {
+                        ev_sfx.send(PlaySfxEvent(SFX::IncorrectOrder));
+                        ev_sfx.send(PlaySfxEvent(SFX::CustomerSad));
+                    }
+                }
                 ev_send_burger.send(BurgerFinishedEvent {
                     correct,
                     size: current_burger.ingredients.len(),

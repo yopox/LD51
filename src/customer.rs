@@ -204,6 +204,7 @@ fn watch_customer_waiting_time(
     for ev in ev_tween_finished.iter() {
         if ev.user_data == EV_CUSTOMER_WAITING_TIME_ELAPSED {
             sfx.send(PlaySfxEvent(SFX::IncorrectOrder));
+            sfx.send(PlaySfxEvent(SFX::CustomerSad));
             ev_burger_completed.send(BurgerFinishedEvent {
                 correct: false,
                 size: current_burger.ingredients.len(),
