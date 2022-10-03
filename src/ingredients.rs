@@ -2,7 +2,7 @@ use std::cmp::min;
 
 use rand::prelude::*;
 
-#[derive(Clone, Eq, PartialEq, Copy)]
+#[derive(Clone, Eq, PartialEq, Copy, Hash)]
 pub enum Ingredient {
     Bread,
     Steak,
@@ -99,7 +99,7 @@ impl Ingredient {
             Ingredient::Chicken => "Chicken",
             Ingredient::Mushrooms => "Mushrooms",
             Ingredient::Onions => "Onions",
-            Ingredient::Mayo => "Mayonnaise",
+            Ingredient::Mayo => "Mayo",
             Ingredient::Ketchup => "Ketchup",
         }
         .to_string()
@@ -151,6 +151,7 @@ impl Menu {
                     .into_iter()
                     // Remove the special ingredients that we don't want interfering with our stuff
                     .filter(|i| match i {
+                        Ingredient::Bread => false,
                         Ingredient::Steak => false,
                         Ingredient::Chicken => false,
                         Ingredient::Mayo => false,
@@ -237,13 +238,14 @@ impl Menu {
     pub fn basic_ingredients(&self) -> Vec<Ingredient> {
         match self {
             Menu::Uno => {
+                // TODO: Madness mode
                 let additional_ingredient =
                     vec![Ingredient::Salad, Ingredient::Ketchup, Ingredient::Cheese]
                         .iter()
                         .choose(&mut thread_rng())
                         .copied()
                         .unwrap();
-                vec![Ingredient::Steak, additional_ingredient]
+                vec![Ingredient::Bread, Ingredient::Steak, additional_ingredient]
             }
         }
     }

@@ -5,8 +5,8 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_tweening::{Animator, Delay};
+use rand::{Rng, thread_rng};
 use rand::prelude::SliceRandom;
-use rand::thread_rng;
 
 use crate::{GameState, Labels, tween};
 use crate::button::{Letter, spawn_button};
@@ -16,14 +16,17 @@ use crate::loading::{FontAssets, TextureAssets};
 use crate::order::{BurgerFinishedEvent, MenuOnDisplay, Order};
 
 /// Flow of the restaurant:
-/// 1. [`crate::cooking::start_cooking`] -> Sends [`CallNewCustomer`] to call the first customer
-/// 2. [`crate::customer::next_customer`] -> Sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_ARRIVED }`] when the customer appears
-/// 3. [`crate::order::add_order`] -> Generates the order of the customer and sends [`ShowOrderEvent`]
-/// 4. [`crate::restaurant::show_order`] -> Shows the order
+/// 1. [`crate::cooking::start_cooking`] -> Sends [`crate::customer::CallNewCustomer`] to call the first customer
+/// 2. [`crate::customer::customer_enter`] -> Listens to [`crate::customer::CallNewCustomer`] and make the customer appears
+/// 3. [`crate::order::add_order`] -> Listens to [`crate::customer::CallNewCustomer`], generates the order of the customer and sends [`ShowOrderEvent`]
+/// 4. [`show_order`] -> Shows the order
 /// 5. [`crate::cooking::send_order`] -> The user sends an order and the event [`BurgerFinishedEvent`] is sent
 ///     - [`crate::cooking::display_streak_or_miss`] -> Listens to [`BurgerFinishedEvent`] and displays GUI
-///     - [`crate::restaurant::hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
-///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score and sends [`CallNewCustomer`]
+///     - [`crate::cooking::animate_burger`] -> Listens to [`BurgerFinishedEvent`] and animates the burger
+///     - [`hide_order`] -> Listens to [`BurgerFinishedEvent`] and hide the current order
+///     - [`crate::order::receive_burger`] -> Listens to [`BurgerFinishedEvent`], updates the score
+///     - [`crate::customer::customer_exit`] -> Listens to [`BurgerFinishedEvent`], make the customer exit and sends [`TweenCompleted { _, crate::tween::EV_CUSTOMER_EXITED }`] when customer has exited
+/// 6. [`crate::customer::watch_customer_exited`] -> Sends [`crate::customer::CallNewCustomer`] or sets State to [`crate::GameState::GameOver`]
 pub struct RestaurantPlugin;
 
 impl Plugin for RestaurantPlugin {
@@ -32,7 +35,6 @@ impl Plugin for RestaurantPlugin {
             SystemSet::on_enter(GameState::Cooking)
                 .label(Labels::UI)
                 .with_system(init_restaurant)
-                .with_system(init_menu),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Cooking)
@@ -55,11 +57,18 @@ impl Plugin for RestaurantPlugin {
             true,
         )))
         .add_event::<ShowOrderEvent>()
-        .add_event::<AddIngredientEvent>();
+        .add_event::<AddIngredientEvent>()
+        .add_event::<ShowIngredientEvent>();
     }
 }
 
 pub struct ShowOrderEvent;
+
+struct ShowIngredientEvent {
+    replace: bool,
+    position: usize,
+    ingredient: Ingredient,
+}
 
 #[derive(Component)]
 struct CurrentOrderIngredient;
@@ -209,7 +218,7 @@ fn update_arrow(
 #[derive(Component)]
 struct AddIngredientTimer(pub Timer);
 
-struct AddIngredientEvent(pub Ingredient);
+pub struct AddIngredientEvent(pub Ingredient);
 
 static MENU_SIZE: usize = 8;
 
@@ -223,27 +232,47 @@ fn add_ingredient_watcher(
     timer.0.tick(time.delta());
 
     if timer.0.finished() {
-        menu.ingredients().shuffle(&mut thread_rng());
-        for ingredient in menu.ingredients() {
-            if menu_on_display.ingredients.len() < MENU_SIZE && !menu_on_display.ingredients.contains(&ingredient) {
-                ev_add_ingredient.send(AddIngredientEvent(ingredient));
-                return;
-            }
-        }
+        let ingredients = menu.ingredients();
+        let mut ingredients_not_in_menu: Vec<&Ingredient> = ingredients
+            .iter().filter(|&i| !menu_on_display.ingredients.contains(i))
+            .collect();
+        ingredients_not_in_menu.shuffle(&mut thread_rng());
+        ev_add_ingredient.send(AddIngredientEvent(**ingredients_not_in_menu.first().unwrap()));
     }
 }
 
 fn add_ingredient_to_menu(
     mut menu: ResMut<MenuOnDisplay>,
     mut ev_add_ingredient: EventReader<AddIngredientEvent>,
+    mut ev_show_ingredient: EventWriter<ShowIngredientEvent>,
 ) {
     for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
-        menu.ingredients.push(ingredient);
+        menu.ingredients_seen.insert(ingredient);
+        if menu.ingredients.len() <= MENU_SIZE {
+            // Add a new item at the end of the menu
+            menu.ingredients.push(ingredient);
+            println!("Menu: {}", menu.ingredients.iter().map(|i| i.name()).collect::<Vec<String>>().join(";"));
+            ev_show_ingredient.send(ShowIngredientEvent {
+                replace: false,
+                position: menu.ingredients.iter().position(|&i| i == ingredient).unwrap(),
+                ingredient
+            });
+        } else {
+            // Replace a menu item
+            let to_replace = thread_rng().gen_range(2..MENU_SIZE);
+            menu.ingredients.remove(to_replace);
+            menu.ingredients.insert(to_replace, ingredient);
+            ev_show_ingredient.send(ShowIngredientEvent {
+                replace: true,
+                position: to_replace,
+                ingredient
+            })
+        }
     }
 }
 
 #[derive(Component)]
-struct CurrentMenuIngredient(Ingredient);
+struct CurrentMenuIngredient(u8);
 
 fn spawn_menu_item(
     ingredient: Ingredient,
@@ -252,14 +281,17 @@ fn spawn_menu_item(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
 ) {
-    let button_pos = Vec2::new(24., 145. - 16. * item_number as f32);
-    spawn_button(
+    let button_pos = Vec2::new(20., 145. - 16. * item_number as f32);
+    let button = spawn_button(
         &mut commands,
         button_pos,
         ingredient.key(),
         &textures,
         &fonts,
     );
+    commands
+        .entity(button)
+        .insert(CurrentMenuIngredient(item_number));
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -274,40 +306,55 @@ fn spawn_menu_item(
                 }],
                 ..Default::default()
             },
-            transform: Transform::from_xyz(44., 158. - 16. * item_number as f32, 1.),
+            transform: Transform::from_xyz(40., 158. - 16. * item_number as f32, 1.),
             ..Default::default()
         })
-        .insert(CurrentMenuIngredient(ingredient))
+        .insert(CurrentMenuIngredient(item_number))
         .insert(RestaurantUi);
 }
 
-fn init_menu(
-    mut commands: Commands,
-    menu: Res<MenuOnDisplay>,
-    textures: Res<TextureAssets>,
-    fonts: Res<FontAssets>,
+fn replace_menu_item(
+    ingredient: Ingredient,
+    item_number: u8,
+    mut commands: &mut Commands,
+    textures: &Res<TextureAssets>,
+    fonts: &Res<FontAssets>,
+    query: &Query<(Entity, &CurrentMenuIngredient)>,
 ) {
-    spawn_menu_item(Ingredient::Bread, 0, &mut commands, &textures, &fonts);
-    for (i, &ingredient) in menu.ingredients.iter().enumerate() {
-        spawn_menu_item(ingredient, 1 + i as u8, &mut commands, &textures, &fonts);
+    for (e, &CurrentMenuIngredient(i)) in query.iter() {
+        if item_number == i {
+            commands.entity(e).despawn_recursive();
+        }
     }
+    spawn_menu_item(ingredient, item_number, &mut commands, textures, fonts);
 }
 
 fn show_menu(
-    mut ev_add_ingredient: EventReader<AddIngredientEvent>,
+    mut ev_show_ingredient: EventReader<ShowIngredientEvent>,
     mut commands: Commands,
-    current_ingredients: Query<Entity, With<CurrentMenuIngredient>>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
+    ingredients_query: Query<(Entity, &CurrentMenuIngredient)>,
 ) {
-    for &AddIngredientEvent(ingredient) in ev_add_ingredient.iter() {
-        spawn_menu_item(
-            ingredient,
-            current_ingredients.iter().count() as u8,
-            &mut commands,
-            &textures,
-            &fonts,
-        );
+    for &ShowIngredientEvent { replace, position, ingredient } in ev_show_ingredient.iter() {
+        if replace {
+            replace_menu_item(
+                ingredient,
+                position as u8,
+                &mut commands,
+                &textures,
+                &fonts,
+                &ingredients_query
+            );
+        } else {
+            spawn_menu_item(
+                ingredient,
+                position as u8,
+                &mut commands,
+                &textures,
+                &fonts,
+            );
+        }
     }
 }
 

@@ -1,14 +1,13 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::TweenCompleted;
-use rand::prelude::*;
+use bevy::utils::HashSet;
 
-use crate::{GameState, Labels, tween};
+use crate::{GameState, Labels};
 use crate::cooking::ExpectingOrder;
 use crate::customer::CallNewCustomer;
 use crate::ingredients::{Ingredient, Menu};
-use crate::restaurant::ShowOrderEvent;
+use crate::restaurant::{AddIngredientEvent, ShowOrderEvent};
 use crate::score::{LifeIcon, Score};
 
 #[derive(Default)]
@@ -20,14 +19,7 @@ pub struct Order {
 #[derive(Default)]
 pub struct MenuOnDisplay {
     pub ingredients: Vec<Ingredient>,
-}
-
-impl From<Menu> for MenuOnDisplay {
-    fn from(m: Menu) -> Self {
-        MenuOnDisplay {
-            ingredients: m.ingredients().choose_multiple(&mut thread_rng(), 2).cloned().collect()
-        }
-    }
+    pub ingredients_seen: HashSet<Ingredient>,
 }
 
 pub struct OrderPlugin;
@@ -58,11 +50,17 @@ impl Plugin for OrderPlugin {
             );
     }
 }
+
 fn init_menu(
     menu: Res<Menu>,
     mut menu_on_display: ResMut<MenuOnDisplay>,
+    mut ev_add_ingredient: EventWriter<AddIngredientEvent>,
 ) {
-    menu_on_display.ingredients = menu.basic_ingredients();
+    menu_on_display.ingredients.clear();
+    menu_on_display.ingredients_seen.clear();
+    for i in menu.basic_ingredients() {
+        ev_add_ingredient.send(AddIngredientEvent(i));
+    }
 }
 
 fn add_order(
@@ -71,18 +69,17 @@ fn add_order(
     time: Res<Time>,
     mut commands: Commands,
     mut order: ResMut<Order>,
-    mut ev_tween_completed: EventReader<TweenCompleted>,
+    mut ev_new_customer: EventReader<CallNewCustomer>,
     mut ev_show_order: EventWriter<ShowOrderEvent>,
 ) {
-    for TweenCompleted { entity: _entity, user_data } in ev_tween_completed.iter() {
-        if *user_data != tween::EV_CUSTOMER_ARRIVED { continue }
+    for CallNewCustomer in ev_new_customer.iter() {
         order.ingredients = menu_ref.generate_order(&menu.ingredients);
         order.creation_time = time.time_since_startup();
         commands.insert_resource(ExpectingOrder(true));
         ev_show_order.send(ShowOrderEvent);
         break;
     }
-    ev_tween_completed.clear();
+    ev_new_customer.clear();
 }
 
 fn receive_burger(
@@ -90,8 +87,6 @@ fn receive_burger(
     order: Res<Order>,
     mut score: ResMut<Score>,
     mut ev_burger_sent: EventReader<BurgerFinishedEvent>,
-    mut ev_call_customer: EventWriter<CallNewCustomer>,
-    mut state: ResMut<State<GameState>>,
     mut life_icons: Query<(&LifeIcon, &mut TextureAtlasSprite)>,
 ) {
     for &BurgerFinishedEvent(correct, difficulty) in ev_burger_sent.iter() {
@@ -104,11 +99,7 @@ fn receive_burger(
             for (LifeIcon(i), mut sprite) in life_icons.iter_mut() {
                 sprite.index = if *i >= score.lives { 1 } else { 0 };
             }
-            if score.lives == 0 {
-                state.set(GameState::GameOver).unwrap();
-            }
         }
-        if score.lives > 0 { ev_call_customer.send(CallNewCustomer); }
         break;
     }
     ev_burger_sent.clear();
