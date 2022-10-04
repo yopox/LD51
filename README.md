@@ -16,14 +16,16 @@ Minor spoilers below! The key corresponding to an ingredient is written around b
 
 ![](promo/controls.png)
 
-- Title screen:
-  - [c] Classic mode (start with a basic menu)
-  - [d] Madness mode (start with a full menu and less time to prepare burgers)
-  - [u] Mute / unmute the music
-- Cooking screen:
-  - The key associated with each ingredient is shown in the menu on the left of the screen (and also on this page)
-  - [space] / [enter] Send the order
-  - [backspace] Remove placed ingredients
+- **Title screen:**
+    - **[c]** Classic mode (start with a basic menu)
+    - **[d]** Madness mode (start with a full menu and less time to prepare burgers)
+    - **[u]** Mute / unmute the music
+- **Cooking screen:**
+    - The key associated with each ingredient is shown in the menu on the left of the screen (and also on this page)
+    - **[space]** / **[enter]** Send the order
+    - **[backspace]** Remove placed ingredients
+- **Game over screen:**
+    - **[m]** / **[i]** / **[a]** / **[m]** Return to title
 
 ![](promo/team.png)
 
