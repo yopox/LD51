@@ -32,12 +32,12 @@ pub struct AudioAssets {
     pub classic: Handle<AudioSource>,
     #[asset(path = "audio/MADNESS.ogg")]
     pub madness: Handle<AudioSource>,
-    #[asset(path = "audio/game over.ogg")]
+    #[asset(path = "audio/GAME_OVER.ogg")]
     pub game_over: Handle<AudioSource>,
 
-    #[asset(path = "audio/SFX/1 error.ogg")]
+    #[asset(path = "audio/SFX/1_error.ogg")]
     pub incorrect_order: Handle<AudioSource>,
-    #[asset(path = "audio/SFX/2 validé.ogg")]
+    #[asset(path = "audio/SFX/2_correct.ogg")]
     pub correct_order: Handle<AudioSource>,
     #[asset(path = "audio/SFX/bread.ogg")]
     pub bread: Handle<AudioSource>,
@@ -49,11 +49,11 @@ pub struct AudioAssets {
     pub sauce: Handle<AudioSource>,
     #[asset(path = "audio/SFX/vegetable.ogg")]
     pub vegetable: Handle<AudioSource>,
-    #[asset(path = "audio/SFX/1 ok bye.ogg")]
+    #[asset(path = "audio/SFX/1_ok_bye.ogg")]
     pub customer_sad: Handle<AudioSource>,
-    #[asset(path = "audio/SFX/2 thank you.ogg")]
+    #[asset(path = "audio/SFX/2_thank_you.ogg")]
     pub customer_happy: Handle<AudioSource>,
-    #[asset(path = "audio/SFX/craie.ogg")]
+    #[asset(path = "audio/SFX/chalk.ogg")]
     pub chalk: Handle<AudioSource>,
 }
 
