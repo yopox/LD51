@@ -1,4 +1,4 @@
-[![LD51](https://img.shields.io/badge/Ludum%20Dare-51-orange.svg)](https://ldjam.com/events/ludum-dare/51/miam) [![bevy](https://img.shields.io/badge/bevy-v0.8.0-blue.svg)](https://github.com/bevyengine/bevy)
+[![LD51](https://img.shields.io/badge/Ludum%20Dare-51-orange.svg)](https://ldjam.com/events/ludum-dare/51/miam) [![bevy](https://img.shields.io/badge/bevy-v0.8.0-blue.svg)](https://github.com/bevyengine/bevy) [![itch](https://img.shields.io/badge/itch.io-play-green.svg)](https://yopox.itch.io/miam)
 
 ![](promo/miam.png)
 
