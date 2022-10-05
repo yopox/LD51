@@ -1,6 +1,6 @@
 [package]
 name = "miam"
-version = "0.1.0"
+version = "1.0.0"
 publish = false
 authors = ["yopox <yopoxdev@gmail.com>", "Hadrien Renaud <hadrien.renaud.22@ucl.ac.uk>"]
 edition = "2021"
